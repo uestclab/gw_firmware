@@ -32,14 +32,27 @@ void test(g_handler_para* g_handler){
 
 }
 
+int init_args_para(g_args_para** g_args){
+	*g_args = (g_args_para*)malloc(sizeof(g_args_para));
+    if(*g_args == NULL){
+		return -1;
+    }
+
+	(*g_args)->control_run_num = 0;
+	INIT_LIST_HEAD(&((*g_args)->excel_list));
+	INIT_LIST_HEAD(&((*g_args)->run_list));
+
+
+	return 0;
+}
+
 int main(int argc,char** argv)
 {
-
-    g_args_para* g_args = (g_args_para*)malloc(sizeof(g_args_para));
-    if(g_args == NULL){
- 		fprintf (stdout, "error : g_args == NULL \n");
-        return 0;       
-    }
+	g_args_para* g_args = NULL;
+	if(init_args_para(&g_args) != 0){
+		fprintf (stdout, "init_args_para error \n");
+        return 0;	
+	}
 
 	int ret = get_cmd_line(argc, argv, g_args);
 	if(-EPERM == ret){
@@ -95,7 +108,12 @@ int main(int argc,char** argv)
 	// 	return 0;
 	// }
 
-    test(g_handler);
+	test(g_handler);
+
+	if(start_parse(g_handler) !=0){
+        zlog_info(zlog_handler, "start_parse error !!");
+        return 0;		
+	}
 
 	eventLoop(g_handler);
 

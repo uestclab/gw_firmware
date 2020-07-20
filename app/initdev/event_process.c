@@ -9,46 +9,46 @@ void checkTaskToTimer(ngx_event_t *ev){
 
 void timeout_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
     zlog_info(g_handler->log_handler, "timeout fun \n");
-
-    addTimeOutWorkToTimer(g_handler->g_msg_queue, checkTaskToTimer, 5000, g_handler->g_timer);
-
+    addTimeOutWorkToTimer(g_handler->g_msg_queue, checkTaskToTimer, 30000, g_handler->g_timer);
 }
 
 void reload_conf_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
     zlog_info(g_handler->log_handler, "reload_conf_fun fun \n");
 }
 
+void work_idle_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
+    zlog_info(g_handler->log_handler, "work_idle_fun fun \n");
+    run_action_by_step(g_handler, g_handler->g_threadpool);
+}
+
+void completed_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
+    zlog_info(g_handler->log_handler, "completed_fun fun \n");
+}
 
 msg_fun_st msg_flow[] = 
 { 
     {MSG_TIMEOUT, timeout_fun}, 
     {MSG_CLI, reload_conf_fun}, 
-    {MSG_CONF_CHANGE, reload_conf_fun}
+    {MSG_CONF_CHANGE, reload_conf_fun},
+    {MSG_WORK_IDLE, work_idle_fun},
+    {MSG_NO_WORK_LEFT, completed_fun}
 };
 
 void parseEventJson(char* event_buf, int buf_len){
 	cJSON * root = NULL;
     cJSON * item = NULL;
     root = cJSON_Parse(event_buf);
-    // msg_tmp->arg_1 = -1;
-    // msg_tmp->buf_data = NULL;
-    // msg_tmp->buf_data_len = 0;
     if(cJSON_HasObjectItem(root,"localIp") == 1){
         item = cJSON_GetObjectItem(root,"localIp");
-        // memcpy(msg_tmp->localIP, item->valuestring, strlen(item->valuestring)+1);
     }
     if(cJSON_HasObjectItem(root,"currentTime") == 1){
         item = cJSON_GetObjectItem(root,"currentTime");
-        // memcpy(msg_tmp->currentTime, item->valuestring, strlen(item->valuestring)+1);
-        // msg_tmp->buf_data_len = strlen(item->valuestring)+1;
     }
     cJSON_Delete(root);
 }
 
 int processMessage_table_drive(struct msg_st* msgData, g_handler_para* g_handler) 
 { 
-    //parseEventJson(msgData->msg_json,msgData->msg_len);
-
     int type_num = sizeof(msg_flow) / sizeof(msg_fun_st); 
     int i = 0;
     for (i = 0; i < type_num; i++) 
@@ -66,8 +66,8 @@ int processMessage_table_drive(struct msg_st* msgData, g_handler_para* g_handler
 void 
 eventLoop(g_handler_para* g_handler){
 
+    run_action_by_step(g_handler, g_handler->g_threadpool);
     addTimeOutWorkToTimer(g_handler->g_msg_queue, checkTaskToTimer, 5000, g_handler->g_timer);
-
 	while(1){
 		struct msg_st* getData = getMsgQueue(g_handler->g_msg_queue);
 		if(getData == NULL){
@@ -76,8 +76,6 @@ eventLoop(g_handler_para* g_handler){
 		}
 
         int ret = processMessage_table_drive(getData, g_handler);
-
-
 
 		free(getData);
 	}// end while(1)

@@ -8,6 +8,11 @@
 #ifndef _GW_CORE_H_INCLUDED_
 #define _GW_CORE_H_INCLUDED_
 
+
+#ifndef	_GNU_SOURCE
+#define		_GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,8 +25,13 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <assert.h>
-#include <pthread.h>  
+#include <pthread.h> 
+#include <limits.h>
+#include <sys/stat.h>   
+#include <unistd.h>
+#include <fcntl.h>
 
+#include "list.h"
 #include "cJSON.h"
 #include "gw_macros_util.h"
 #include "zlog.h"
@@ -32,9 +42,12 @@
 
 
 typedef struct g_args_para{
+	int     control_run_num;
 	char*   prog_name;
 	char*   conf_file;
 	char*   log_file;
+    struct list_head excel_list;
+	struct list_head run_list;
 }g_args_para;
 
 typedef struct g_handler_para{
@@ -46,5 +59,36 @@ typedef struct g_handler_para{
 }g_handler_para;
 
 
+static inline void* xmalloc(size_t size)
+{
+	void *ptr = malloc(size);
+	return ptr;
+}
+
+static inline void* xzalloc(size_t size)
+{
+	void *ptr = malloc(size);
+	memset(ptr, 0, size);
+	return ptr;
+}
+
+static inline void* xrealloc(void *ptr, size_t size)
+{
+	ptr = realloc(ptr, size);
+	return ptr;
+}
+
+#define	xfree(ptr) do{ \
+	if(ptr){ \
+		free(ptr); \
+		ptr = NULL; \
+	} \
+}while(0)
+
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
+#define	RESPAWN		0x1
+#define ONCE        0x2
+#define WAITE       0x3
 
 #endif /* _GW_CORE_H_INCLUDED_ */

@@ -7,6 +7,8 @@ typedef enum msg_event{
 	MSG_MONITOR,
 	MSG_TIMEOUT,
 	MSG_CONF_CHANGE,
+	MSG_WORK_IDLE,
+	MSG_NO_WORK_LEFT,
 }msg_event;
 
 // 表驱动
@@ -18,7 +20,9 @@ typedef struct __msg_fun_st
 }msg_fun_st;
 
 
+
 #include "event_process.h"
 #include "timer.h"
 #include "cmd_line.h"
+#include "parse_mon.h"
 
