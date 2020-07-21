@@ -9,7 +9,7 @@ void checkTaskToTimer(ngx_event_t *ev){
 
 void timeout_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
     zlog_info(g_handler->log_handler, "timeout fun \n");
-    addTimeOutWorkToTimer(g_handler->g_msg_queue, checkTaskToTimer, 30000, g_handler->g_timer);
+    addTimeOutWorkToTimer(g_handler->g_msg_queue, checkTaskToTimer, 1800000, g_handler->g_timer);
 }
 
 void reload_conf_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
@@ -30,8 +30,8 @@ msg_fun_st msg_flow[] =
     {MSG_TIMEOUT, timeout_fun}, 
     {MSG_CLI, reload_conf_fun}, 
     {MSG_CONF_CHANGE, reload_conf_fun},
-    {MSG_WORK_IDLE, work_idle_fun},
-    {MSG_NO_WORK_LEFT, completed_fun}
+    {MSG_MONTAB_WORK_IDLE, work_idle_fun},
+    {MSG_NO_MONTAB_WORK_LEFT, completed_fun}
 };
 
 void parseEventJson(char* event_buf, int buf_len){

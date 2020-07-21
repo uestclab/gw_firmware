@@ -14,11 +14,17 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/app/initdev BIN_SRCS)
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SRCS) 
 
-#aux_source_directory(${PROJECT_SOURCE_DIR}/src/spidev SPIDEV_SRCS) 
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/regdev REG_SRCS)
+
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/gpio GPIO_SRCS)
+
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/spidev SPIDEV_SRCS)
+
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/i2cdev I2CDEV_SRCS)  
 
 
 #add_executable(${BIN_NAME} ${BIN_SRCS} ${SRCS} ${SPIDEV_SRCS})
-add_executable(${BIN_NAME} ${BIN_SRCS} ${SRCS})
+add_executable(${BIN_NAME} ${BIN_SRCS} ${SRCS} ${REG_SRCS} ${GPIO_SRCS} ${SPIDEV_SRCS} ${I2CDEV_SRCS})
 
 add_library(zlog SHARED IMPORTED)
 add_library(cjson SHARED IMPORTED)

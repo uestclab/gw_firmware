@@ -1,5 +1,13 @@
 #include "core.h"
 
+#include "small_func.h"
+
+
+#include <regdev/regdev_common.h>
+#include <gpio/gpio_dev.h>
+#include <gpio/gpio_ops.h>
+#include <spidev/spi_common.h>
+#include <i2cdev/i2c_common.h>
 
 typedef enum msg_event{
 	/* test msg type */
@@ -7,8 +15,8 @@ typedef enum msg_event{
 	MSG_MONITOR,
 	MSG_TIMEOUT,
 	MSG_CONF_CHANGE,
-	MSG_WORK_IDLE,
-	MSG_NO_WORK_LEFT,
+	MSG_MONTAB_WORK_IDLE,
+	MSG_NO_MONTAB_WORK_LEFT,
 }msg_event;
 
 // 表驱动

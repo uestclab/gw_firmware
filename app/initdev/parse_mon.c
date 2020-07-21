@@ -179,7 +179,7 @@ void display(g_handler_para* g_handler){
 void* montab_work_thread(void* args){
 	g_handler_para* g_handler = (g_handler_para*)args;
     g_args_para* g_args = g_handler->g_args;
-    sleep(5);
+    sleep(1);
 
     int control_num = g_args->control_run_num;
     run_node_s* pnode = NULL;
@@ -189,12 +189,12 @@ void* montab_work_thread(void* args){
 			zlog_info(g_handler->log_handler," control_num : %d ---- seq: %d , dst: %s, conf: %s, st_file: %s, st_to: %d \n" , 
                 control_num, pnode->seq, pnode->dst, pnode->con_file, pnode->st_file_list, pnode->st_to);
             g_args->control_run_num ++;
-			postMsg(MSG_WORK_IDLE,NULL,0,NULL,0,g_handler->g_msg_queue);
+			postMsg(MSG_MONTAB_WORK_IDLE,NULL,0,NULL,0,g_handler->g_msg_queue);
 			return NULL;
 		}
 	}
 
-	postMsg(MSG_NO_WORK_LEFT,NULL,0,NULL,0,g_handler->g_msg_queue);
+	postMsg(MSG_NO_MONTAB_WORK_LEFT,NULL,0,NULL,0,g_handler->g_msg_queue);
 	return NULL;
     
 }

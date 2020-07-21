@@ -31,7 +31,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include "small_func.h"
 #include "list.h"
+
 #include "cJSON.h"
 #include "gw_macros_util.h"
 #include "zlog.h"
