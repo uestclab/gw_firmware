@@ -176,10 +176,71 @@ void display(g_handler_para* g_handler){
 	zlog_info(g_handler->log_handler,"  ---------------- end display () ----------------------\n");
 }
 
+
+int shell_proc(const char *dst, void* cmd){
+	run_node_s* run_cmd = (run_node_s*)cmd;
+	if(0 == strcmp(run_cmd->con_file, "exit")){
+		;
+	}else{
+		//system(run_cmd->con_file);
+	}
+	return 0;
+}
+
+int spi_proc(const char *dst, void* cmd){
+	run_node_s* run_cmd = (run_node_s*)cmd;
+	printf("seq_cnt : %d , spi_proc --- dst : %s\n", run_cmd->seq_num ,dst);
+
+	int ret = spi_cmd_process(run_cmd->con_file);
+
+	return ret;
+}
+
+int reg_proc(const char *dst, void* cmd){
+	run_node_s* run_cmd = (run_node_s*)cmd;
+	printf("seq_cnt : %d , reg_proc --- dst : %s\n", run_cmd->seq_num ,dst);
+	return 0;
+}
+
+int tmp_fun(const char *dst, void* cmd){
+	run_node_s* run_cmd = (run_node_s*)cmd;
+	printf("seq_cnt : %d , tmp_fun --- dst : %s\n", run_cmd->seq_num ,dst);
+	return 0;
+}
+
+dst_fun_st dst_flow[] = {
+	{"shell", shell_proc},
+	{"adc",spi_proc},
+	{"dac",spi_proc},
+	{"hmc",spi_proc},
+	{"lmx",spi_proc},
+	{"reg",reg_proc},
+	{"rf",tmp_fun},
+	{"gpio",tmp_fun},
+};
+
+
+
+
+// gpio , adc ,dac, hmc, lmx, reg, rf, shell
+int process_dispatch(run_node_s* pnode){
+	int type_num = sizeof(dst_flow) / sizeof(dst_fun_st);
+	int i = 0;
+	int ret = -1;
+	for(i = 0; i < type_num; i++){
+		if(0 == strcmp(pnode->dst, dst_flow[i].msg_dst)){
+			ret = dst_flow[i].fun_ptr(pnode->dst,pnode);
+			break;
+		}
+	}
+	return ret;
+}
+
+
 void* montab_work_thread(void* args){
 	g_handler_para* g_handler = (g_handler_para*)args;
     g_args_para* g_args = g_handler->g_args;
-    sleep(1);
+    // sleep(1);
 
     int control_num = g_args->control_run_num;
     run_node_s* pnode = NULL;
@@ -188,9 +249,16 @@ void* montab_work_thread(void* args){
 		if(pnode->seq_num == control_num){    
 			zlog_info(g_handler->log_handler," control_num : %d ---- seq: %d , dst: %s, conf: %s, st_file: %s, st_to: %d \n" , 
                 control_num, pnode->seq, pnode->dst, pnode->con_file, pnode->st_file_list, pnode->st_to);
-            g_args->control_run_num ++;
-			postMsg(MSG_MONTAB_WORK_IDLE,NULL,0,NULL,0,g_handler->g_msg_queue);
-			return NULL;
+
+			// process
+			if(process_dispatch(pnode) == 0){
+				g_args->control_run_num ++;
+				postMsg(MSG_MONTAB_WORK_IDLE,NULL,0,NULL,0,g_handler->g_msg_queue);
+				return NULL;
+			}else{
+				postMsg(MSG_MONTAB_PROCESS_FAULT,NULL,0,NULL,0,g_handler->g_msg_queue);
+				return NULL;
+			}
 		}
 	}
 

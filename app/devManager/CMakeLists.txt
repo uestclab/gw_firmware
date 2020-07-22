@@ -5,12 +5,12 @@ include_directories("/home/dpdk/liqing/code/GW_handover/handover_Server/dependen
 include_directories("/home/dpdk/liqing/common/include")
 include_directories("${PROJECT_SOURCE_DIR}/include")
 include_directories("${PROJECT_SOURCE_DIR}/src")
-include_directories("${PROJECT_SOURCE_DIR}/app/initdev")
+include_directories("${PROJECT_SOURCE_DIR}/app/devManager")
 
-SET(BIN_NAME initdev) 
+SET(BIN_NAME devManager) 
 
 #通用源文件 
-aux_source_directory(${PROJECT_SOURCE_DIR}/app/initdev BIN_SRCS) 
+aux_source_directory(${PROJECT_SOURCE_DIR}/app/devManager BIN_SRCS) 
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SRCS) 
 

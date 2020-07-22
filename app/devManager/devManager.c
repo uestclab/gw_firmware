@@ -63,7 +63,7 @@ int main(int argc,char** argv)
 
 
 	zlog_category_t *zlog_handler = initLog(g_args->log_file,g_args->prog_name);
-	zlog_info(zlog_handler,"******************** start initdev process ********************************\n");
+	zlog_info(zlog_handler,"******************** start devManager process ********************************\n");
 	zlog_info(zlog_handler,"this version built time is:[%s  %s]\n",__DATE__,__TIME__);
 
     g_handler_para* g_handler = (g_handler_para*)malloc(sizeof(g_handler_para));

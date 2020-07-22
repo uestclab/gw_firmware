@@ -85,7 +85,7 @@ int config_read(parser_t *parser, char **tokens, unsigned int ntokens, const cha
 			goto exit;
 		}
 		line = skip_whitespace(parser->line);
-        printf("config_read->parser->line : %s \n", parser->line);
+        // printf("config_read->parser->line : %s \n", parser->line);
 	}while(line[0] == '\0' || line[0] == delims[0] );
 
 	if(line[0] == delims[2]){
@@ -145,7 +145,7 @@ int found_title(parser_t *parser, const char *title)
             ret = -1;
             goto exit;
         }
-        printf("get_line_with_continuation: 0x%x = %s \n", parser->line,parser->line);
+        // printf("get_line_with_continuation: 0x%x = %s \n", parser->line,parser->line);
         line1 = strstr(parser->line, title);
     }while( (NULL == line1));
 	
@@ -169,39 +169,6 @@ parser_t* config_open2(const char *filename, FILE* (*fopen_func)(const char *pat
 	parser->fp = fp;
 	return parser;
 }
-
-
-
-int read_config_file(const char *path, char **file_buf)
-{
-	int fd, ret;
-	struct stat buf;
-
-	if(NULL == path){
-		ret = -EINVAL;
-		goto exit;
-	}
-	
-	ret = fd =  open(path,(O_RDONLY | O_SYNC), 0666);
-	if(ret < 0){
-		//log_error("open(%s)err",path);
-		goto exit;
-	}
-	fstat(fd, &buf);
-	
-	*file_buf = (char*)xzalloc(buf.st_size + 1);
-	if(NULL == *file_buf){
-		ret = -ENOMEM;
-		goto exit;
-	}
-	
-	ret = read(fd,*file_buf,buf.st_size);
-	close(fd);
-exit:
-	return ret;
-}
-
-
 
 int st_file_parse(const char *cf_path, struct stat_node_s *stat)
 {

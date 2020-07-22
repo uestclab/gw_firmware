@@ -1,5 +1,9 @@
 #include "common.h"
 
+void show_msg_info_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
+    zlog_info(g_handler->log_handler, "show_msg_info_fun fun \n");
+}
+
 /* typedef void (*event_handler_pt)(ngx_event_t *ev); */
 void checkTaskToTimer(ngx_event_t *ev){
     g_msg_queue_para* g_msg_queue = (g_msg_queue_para*)(ev->data);
@@ -12,8 +16,8 @@ void timeout_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, in
     addTimeOutWorkToTimer(g_handler->g_msg_queue, checkTaskToTimer, 1800000, g_handler->g_timer);
 }
 
-void reload_conf_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
-    zlog_info(g_handler->log_handler, "reload_conf_fun fun \n");
+void init_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
+    zlog_info(g_handler->log_handler, "init_fun fun \n");
 }
 
 void work_idle_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
@@ -25,13 +29,19 @@ void completed_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, 
     zlog_info(g_handler->log_handler, "completed_fun fun \n");
 }
 
+void montab_fault_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
+    zlog_info(g_handler->log_handler, "montab_fault_fun fun \n");
+}
+
 msg_fun_st msg_flow[] = 
 { 
-    {MSG_TIMEOUT, timeout_fun}, 
-    {MSG_CLI, reload_conf_fun}, 
-    {MSG_CONF_CHANGE, reload_conf_fun},
+    {MSG_TIMEOUT, timeout_fun},
+    {MSG_SHOW_WORKQUEUE, show_msg_info_fun},
+    {MSG_CLI, init_fun}, 
+    {MSG_INIT_COMPLETED, init_fun},
     {MSG_MONTAB_WORK_IDLE, work_idle_fun},
-    {MSG_NO_MONTAB_WORK_LEFT, completed_fun}
+    {MSG_NO_MONTAB_WORK_LEFT, completed_fun},
+    {MSG_MONTAB_PROCESS_FAULT,montab_fault_fun},
 };
 
 void parseEventJson(char* event_buf, int buf_len){
@@ -94,7 +104,7 @@ void postMsg(long int msg_type, char *buf, int buf_len, void* tmp_data, int tmp_
 		memcpy(data->msg_json,buf,buf_len);
 	
 	int level = 0;
-	if(msg_type == MSG_CONF_CHANGE){
+	if(msg_type == MSG_TIMEOUT){
 		level = -1;
 	}
 	postMsgQueue(data,level,g_msg_queue);
