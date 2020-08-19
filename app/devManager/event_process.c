@@ -21,7 +21,7 @@ void init_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int t
 }
 
 void work_idle_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
-    zlog_info(g_handler->log_handler, "work_idle_fun fun \n");
+    zlog_info(g_handler->log_handler, " ---------------- EVENT : MSG_MONTAB_WORK_IDLE: \n");
     run_action_by_step(g_handler, g_handler->g_threadpool);
 }
 
@@ -30,7 +30,16 @@ void completed_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, 
 }
 
 void montab_fault_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
-    zlog_info(g_handler->log_handler, "montab_fault_fun fun \n");
+    zlog_info(g_handler->log_handler, " ---------------- EVENT : MSG_MONTAB_PROCESS_FAULT: \n");
+    zlog_info(g_handler->log_handler, "restart confige process : sleep 5s\n");
+    sleep(5);
+    g_handler->g_args->control_run_num = 0;
+    run_action_by_step(g_handler, g_handler->g_threadpool);
+}
+
+void exit_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
+    zlog_info(g_handler->log_handler, "exit_fun fun \n");
+    g_handler->g_args->exit_code = 1;
 }
 
 msg_fun_st msg_flow[] = 
@@ -42,6 +51,7 @@ msg_fun_st msg_flow[] =
     {MSG_MONTAB_WORK_IDLE, work_idle_fun},
     {MSG_NO_MONTAB_WORK_LEFT, completed_fun},
     {MSG_MONTAB_PROCESS_FAULT,montab_fault_fun},
+    {MSG_EXIT,exit_fun},
 };
 
 void parseEventJson(char* event_buf, int buf_len){
@@ -78,7 +88,7 @@ eventLoop(g_handler_para* g_handler){
 
     run_action_by_step(g_handler, g_handler->g_threadpool);
     addTimeOutWorkToTimer(g_handler->g_msg_queue, checkTaskToTimer, 5000, g_handler->g_timer);
-	while(1){
+	while(!g_handler->g_args->exit_code){
 		struct msg_st* getData = getMsgQueue(g_handler->g_msg_queue);
 		if(getData == NULL){
 			zlog_info(g_handler->log_handler," getMsgQueue : getData == NULL \n");

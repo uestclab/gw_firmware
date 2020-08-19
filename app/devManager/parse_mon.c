@@ -155,17 +155,15 @@ int parse_inittab(parser_t **parser, g_handler_para* g_handler)
 
 void display(g_handler_para* g_handler){
 	zlog_info(g_handler->log_handler,"  ---------------- display () --------------------------\n");
-
-    zlog_info(g_handler->log_handler,"  ---------------- excel () --------------------------\n");
 	g_args_para* g_args = g_handler->g_args;
-    excel_node_s* pnode = NULL;
-	list_for_each_entry(pnode, &g_args->excel_list, next) {
-		if(pnode->command != NULL){    
-			zlog_info(g_handler->log_handler," seq: %d , name: %s, action_type: %d, command: %s \n" , 
-                pnode->seq, pnode->name, pnode->action_type, pnode->command);
-		}
-	}
-
+    // zlog_info(g_handler->log_handler,"  ---------------- excel () --------------------------\n");
+    // excel_node_s* pnode = NULL;
+	// list_for_each_entry(pnode, &g_args->excel_list, next) {
+	// 	if(pnode->command != NULL){    
+	// 		zlog_info(g_handler->log_handler," seq: %d , name: %s, action_type: %d, command: %s \n" , 
+    //             pnode->seq, pnode->name, pnode->action_type, pnode->command);
+	// 	}
+	// }
 
     zlog_info(g_handler->log_handler,"  ---------------- run () --------------------------\n");
     run_node_s* pnode_run = NULL;
@@ -179,11 +177,45 @@ void display(g_handler_para* g_handler){
 	zlog_info(g_handler->log_handler,"  ---------------- end display () ----------------------\n");
 }
 
+/* --------------------------------------------------------------------------------------------------------------- */
+
+int check_state(char* json_path, g_handler_para* g_handler){
+	char *jsonBuf = get_json_buf(json_path);
+	char *dst = NULL;
+	cJSON * root = NULL;
+    cJSON * item = NULL;
+    root = cJSON_Parse(jsonBuf);
+	cJSON * array_item = NULL;
+	if(cJSON_HasObjectItem(root,"dst") == 1){
+		item = cJSON_GetObjectItem(root , "dst");
+		dst = malloc(32);
+		memcpy(dst, item->valuestring, strlen(item->valuestring)+1);
+	}
+	cJSON_Delete(root);
+	int ret = 0;
+	if(dst != NULL){
+		if(0 == strcmp(dst, "gpio")){
+			reset_gpio_info(g_handler->g_tool->gpio_handler);
+			ret = gpio_tool(jsonBuf, g_handler->g_tool->gpio_handler);
+		}else if(0 == strcmp(dst, "spi")){
+			reset_spi_info(g_handler->g_tool->spi_handler);
+			ret = spi_tool(jsonBuf, g_handler->g_tool->spi_handler);
+		}else if(0 == strcmp(dst, "reg")){
+			;
+		}
+		return ret;
+	}else{
+		free(jsonBuf);
+		return -1;
+	}
+}
+
 
 int shell_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	run_node_s* run_cmd = (run_node_s*)cmd;
 	if(0 == strcmp(run_cmd->con_file, "exit")){
-		;
+		printf("shell proc exit \n");
+		postMsg(MSG_EXIT,NULL,0,NULL,0,g_handler->g_msg_queue);
 	}else{
 		system(run_cmd->con_file);
 	}
@@ -192,38 +224,48 @@ int shell_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 
 int spi_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	run_node_s* run_cmd = (run_node_s*)cmd;
-	zlog_info(log_handler, "seq_cnt : %d , spi_proc --- dst : %s\n", run_cmd->seq_num ,dst);
-
-
+	zlog_info(log_handler, "spi_tool : %s\n", run_cmd->con_file);
 	char *jsonBuf = get_json_buf(run_cmd->con_file);
-	if(parse_spidev(jsonBuf,g_handler->g_tool->spi_handler) == -1){
-		return 0;
-	}
-
-	/* spi init */
-	int ret = init_spidev(g_handler->g_tool->spi_handler);
-
-	if(process_spi_cmd(g_handler->g_tool->spi_handler) != 0){
-		free(jsonBuf);
-		close_spidev(g_handler->g_tool->spi_handler);
+	if(spi_tool(jsonBuf, g_handler->g_tool->spi_handler) != 0){
 		return -1;
 	}
-	zlog_info(log_handler,"spi transfer end !\n");
-	free(jsonBuf);
-	close_spidev(g_handler->g_tool->spi_handler);
+	if(run_cmd->st_file_tk_no){
+		zlog_info(log_handler, "spi : check_state --- \n");
+		if(check_state(run_cmd->st_file_list, g_handler) != 0){
+			return -2;
+		}
+	}
 
-	return ret;
+	return 0;
+}
+
+int gpio_proc(const char *dst, void* cmd, g_handler_para* g_handler){
+	run_node_s* run_cmd = (run_node_s*)cmd;
+	zlog_info(log_handler, "gpio_tool : %s\n", run_cmd->con_file);
+	char* jsonBuf = get_json_buf(run_cmd->con_file);
+	if(gpio_tool(jsonBuf, g_handler->g_tool->gpio_handler) != 0){
+		return -1;
+	}
+
+	if(run_cmd->st_file_tk_no){
+		zlog_info(log_handler, "gpio : check_state --- \n");
+		if(check_state(run_cmd->st_file_list, g_handler) != 0){
+			return -2;
+		}
+	}
+
+	return 0;
 }
 
 int reg_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	run_node_s* run_cmd = (run_node_s*)cmd;
-	zlog_info(log_handler, "seq_cnt : %d , reg_proc --- dst : %s\n", run_cmd->seq_num ,dst);
+	zlog_info(log_handler, "reg_proc --- dst : %s\n", dst);
 	return 0;
 }
 
 int tmp_fun(const char *dst, void* cmd, g_handler_para* g_handler){
 	run_node_s* run_cmd = (run_node_s*)cmd;
-	zlog_info(log_handler, "seq_cnt : %d , tmp_fun --- dst : %s\n", run_cmd->seq_num ,dst);
+	zlog_info(log_handler, "tmp_fun --- dst : %s\n", dst);
 	return 0;
 }
 
@@ -235,11 +277,8 @@ dst_fun_st dst_flow[] = {
 	{"lmx",spi_proc},
 	{"reg",reg_proc},
 	{"rf",tmp_fun},
-	{"gpio",tmp_fun},
+	{"gpio",gpio_proc},
 };
-
-
-
 
 // gpio , adc ,dac, hmc, lmx, reg, rf, shell
 int process_dispatch(run_node_s* pnode, g_handler_para* g_handler){
@@ -254,7 +293,6 @@ int process_dispatch(run_node_s* pnode, g_handler_para* g_handler){
 	}
 	return ret;
 }
-
 
 void* montab_work_thread(void* args){
 	g_handler_para* g_handler = (g_handler_para*)args;

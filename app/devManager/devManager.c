@@ -43,6 +43,7 @@ int init_args_para(g_args_para** g_args){
 	INIT_LIST_HEAD(&((*g_args)->excel_list));
 	INIT_LIST_HEAD(&((*g_args)->run_list));
 
+	(*g_args)->exit_code = 0;
 
 	return 0;
 }
@@ -112,6 +113,7 @@ int main(int argc,char** argv)
 	/* init tools */
 	g_handler->g_tool = (g_tool_para*)malloc(sizeof(g_tool_para));
 	init_spi_info(&(g_handler->g_tool->spi_handler));
+	init_gpio_info(&(g_handler->g_tool->gpio_handler));
 
 	test(g_handler);
 

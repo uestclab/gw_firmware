@@ -36,9 +36,8 @@ typedef struct spi_info_t{
 }spi_info_t;
 
 void init_spi_info(spi_info_t** handler);
-int init_spidev(spi_info_t* spi_handler);
-int parse_spidev(char* buf, spi_info_t* spi_handler);
-int process_spi_cmd(spi_info_t* spi_handler);
-void close_spidev(spi_info_t* spi_handler);
+void reset_spi_info(spi_info_t* handler);
+
+int spi_tool(char* jsonBuf, spi_info_t *spi_handler);
 
 #endif /* _SPI_CONTROL_INCLUDED_ */

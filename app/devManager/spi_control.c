@@ -28,6 +28,19 @@ void init_spi_info(spi_info_t** handler){
 	}
 }
 
+void reset_spi_info(spi_info_t* handler){
+	handler->spidev = NULL;
+	handler->fd  = -1;
+	handler->spimode = 0;
+	handler->spimaxclk = 0x7A120;
+	handler->spibpw = 8;
+	handler->cnt = 0;
+	if(handler->c){
+		free(handler->c);
+		handler->c = NULL;
+	}
+}
+
 static void pabort(const char *s)
 {
 	perror(s);
@@ -150,7 +163,7 @@ int parse_spidev(char* buf, spi_info_t* spi_handler){
 
 	int op_cnt = cJSON_GetArraySize(array_item);
 	spi_handler->cnt = op_cnt;
-	//printf("op_cnt = %d \n", op_cnt);
+	printf("op_cnt = %d \n", op_cnt);
 
 	spi_handler->c = (struct spi_op_cmd_s*)xzalloc(sizeof(struct spi_op_cmd_s) * op_cnt);
 
@@ -229,7 +242,7 @@ int process_spi_cmd(spi_info_t* spi_handler){
 		if(spi_handler->c[i].cmd){
 			instuction = spi_handler->c[i].instuction;
 			transfer(spi_handler->fd, (char*)(&instuction), default_rx, 3, spi_handler->spimaxclk, spi_handler->spibpw);
-			printf("instruction_data : 0x%x \n", htonl(instuction)>>8);
+			//printf("instruction_data : 0x%x \n", htonl(instuction)>>8);
 			if(spi_handler->c[i].waite_time){
 				usleep(spi_handler->c[i].waite_time);
 			}	
@@ -277,3 +290,22 @@ int process_spi_cmd(spi_info_t* spi_handler){
 	return 0;
 }
 
+int spi_tool(char* jsonBuf, spi_info_t *spi_handler){
+	if(parse_spidev(jsonBuf,spi_handler) != 0){
+		free(jsonBuf);
+		return -1;
+	}
+
+	/* spi init */
+	int ret = init_spidev(spi_handler);
+
+	if(process_spi_cmd(spi_handler) != 0){
+		free(jsonBuf);
+		close_spidev(spi_handler);
+		return -1;
+	}
+	free(jsonBuf);
+	close_spidev(spi_handler);
+
+	return 0;
+}

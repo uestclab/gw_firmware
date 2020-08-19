@@ -1,7 +1,6 @@
 #ifndef __GPIO_OPS_H__
 #define	__GPIO_OPS_H__
 
-#include "core.h"
 
 #define	GPIO_DIR_OUT	1
 #define	GPIO_DIR_IN 	0
@@ -36,14 +35,16 @@
 #define	NONE_STR		"none"
 
 
+int gpio_open(int gpio_no, unsigned char dir);
 
 int gpio_unexport(int gpio_no);
 int gpio_export(int gpio_no);
-int gpio_get_val(int gpio_no, unsigned char *val);
-int gpio_get_val_fd(int fd, unsigned char *val);
-int gpio_set_val(int gpio_no, unsigned char val);
 int gpio_set_dir(int gpio_no, unsigned char dir);
 int gpio_set_intr(int gpio_no, int edge, int *poll_fd);
 int gpio_op(int gpio_no, unsigned char dir, unsigned char *val);
+
+int gpio_get_val(int gpio_no, unsigned char *val);
+int gpio_get_val_fd(int fd, unsigned char *val);
+int gpio_set_val(int gpio_no, unsigned char val);
 
 #endif

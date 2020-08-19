@@ -1,5 +1,5 @@
 #include "gpio_ops.h"
-#include <unistd.h>
+#include "core.h"
 
 const char rising_str[] = "rising";
 const char falling_str[] = "falling";
@@ -128,9 +128,7 @@ int gpio_set_val(int gpio_no, unsigned char val)
 		ret = fd;
 		goto exit;
 	}
-	//lseek(fd,0,SEEK_SET);
 
-//bugs : 再次设置为out时，对应IO有毛刺
 	if(val){
 		gpio_str_len = strlen(SYSFS_GPIO_H) + 1;
 		ret = write(fd,SYSFS_GPIO_H,gpio_str_len);
@@ -311,4 +309,22 @@ int gpio_op(int gpio_no, unsigned char dir, unsigned char *val)
 
 exit:
 	return ret;
+}
+
+
+int gpio_open(int gpio_no, unsigned char dir){
+	int ret = 0;
+	
+	ret = gpio_export(gpio_no);
+	if(ret < 0){
+		goto exit;
+	}
+	
+	ret = gpio_set_dir(gpio_no, dir);
+	if(ret < 0){
+		goto exit;
+	} 
+
+exit:
+	return ret; 
 }

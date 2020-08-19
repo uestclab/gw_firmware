@@ -7,7 +7,6 @@
 #include "reg_control.h"
 
 #include <regdev/regdev_common.h>
-#include <gpio/gpio_dev.h>
 #include <gpio/gpio_ops.h>
 #include <spidev/spi_common.h>
 #include <i2cdev/i2c_common.h>
@@ -21,6 +20,7 @@ typedef enum msg_event{
 	MSG_MONTAB_WORK_IDLE,
 	MSG_NO_MONTAB_WORK_LEFT,
 	MSG_MONTAB_PROCESS_FAULT,
+	MSG_EXIT,
 }msg_event;
 
 // 表驱动
