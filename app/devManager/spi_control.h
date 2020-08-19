@@ -1,49 +1,44 @@
 #ifndef _SPI_CONTROL_INCLUDED_
 #define _SPI_CONTROL_INCLUDED_
 
+#define BUFF_LEN 256
 
-#pragma pack(1)
 
-struct spi_op_cmd_s_{
-	unsigned char cmd; //0--read  1--write
-	
-	//unsigned char width; //1--byte  2--word  4--dword
-	int			  instruction_data;
-	 
-	int			  waite_time; //waite time  for next write or read. unit us
-
-	/*   ͨ����������������ϣ���ʱ Ҫ��ĳЩλΪ0��1�����
-		1����Ҫ��Ĵ���31bit�������Ž�������������:
-		   ifcon_flag1 = 1;  (((val & ifcon_mask1) == ifcon) ) ������
-		   ifcon_mask1 = 0x80_00_00_00;
-		   ifcon1 = 0;
-	       2����Ҫ��Ĵ���7bit��1����Ž�������������:
-	         ifcon_flag2 = 1; (((val & ifcon_mask2) == ifcon_mask2) ) ������
-	         ifcon_mask2 = 0x00_00_00_80;
-	         ifcon2 = ifcon_mas2;
-	*/
-	int			  ifcon1;
-	unsigned char ifcon1_flag; // 1-- use ifcon1
-	int			  ifcon1_mask;
-
-	int			  ifcon2;
-	unsigned char ifcon2_flag; // 1-- use ifcon2 
-	int			  ifcon2_mask;
-
-	int			  waite_time_ifcon; //waite time  for finish read. unit s
-};
-#pragma pack()
+// static uint32_t mode;
+// static uint8_t bits = 8;
+// static uint32_t speed = 0x7A120;
 
 
 struct spi_op_cmd_s{
-	int item;
-	struct spi_op_cmd_s_ *c;
+	unsigned char cmd; //0--read  1--write
+	uint32_t instuction;
+
+	int			  ifcon1;
+	unsigned char ifcon_flag1; 
+	uint32_t	  ifcon_mask1;
+
+	int			  ifcon2;
+	unsigned char ifcon_flag2; 
+	uint32_t	  ifcon_mask2;
+
+	int			  waite_time_ifcon;
+	int           waite_time; // us
 };
 
+typedef struct spi_info_t{
+	char *spidev;
+	int fd;
+	uint32_t spimode;
+	uint32_t spimaxclk; //speed
+	uint8_t spibpw; // bits
+	int cnt;
+	struct spi_op_cmd_s *c;
+}spi_info_t;
 
-int ct_parse2global_spi(void *dev, const char *jbuf, struct spi_op_cmd_s *clk_cmd);
-
-int spi_cmd_process(const char *conf_file);
-
+void init_spi_info(spi_info_t** handler);
+int init_spidev(spi_info_t* spi_handler);
+int parse_spidev(char* buf, spi_info_t* spi_handler);
+int process_spi_cmd(spi_info_t* spi_handler);
+void close_spidev(spi_info_t* spi_handler);
 
 #endif /* _SPI_CONTROL_INCLUDED_ */

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "cmd_line.h"
 
 zlog_category_t * initLog(const char* path, char* app_name){
 	int rc;
@@ -107,6 +108,10 @@ int main(int argc,char** argv)
 	// 	zlog_info(zlog_handler,"No server thread created \n");
 	// 	return 0;
 	// }
+
+	/* init tools */
+	g_handler->g_tool = (g_tool_para*)malloc(sizeof(g_tool_para));
+	init_spi_info(&(g_handler->g_tool->spi_handler));
 
 	test(g_handler);
 

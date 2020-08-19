@@ -18,7 +18,6 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <signal.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -27,11 +26,18 @@
 #include <assert.h>
 #include <pthread.h> 
 #include <limits.h>
-#include <sys/stat.h>   
-#include <unistd.h>
+#include <sys/stat.h> 
 #include <fcntl.h>
+#include <sys/ioctl.h>
+#include <arpa/inet.h>
+#include <linux/ioctl.h>
+#include <linux/types.h>
+#include <sys/time.h>
+#include <dirent.h>
+#include <poll.h>
 
 #include "small_func.h"
+#include "str2digit.h"
 #include "list.h"
 
 #include "cJSON.h"
@@ -42,6 +48,12 @@
 #include "event_timer.h"
 #include "gw_utility.h"
 
+#include "spi_control.h"
+
+
+typedef struct g_tool_para{
+	spi_info_t *spi_handler;
+}g_tool_para;
 
 typedef struct g_args_para{
 	int     control_run_num;
@@ -58,6 +70,7 @@ typedef struct g_handler_para{
     ThreadPool*         g_threadpool;
     event_timer_t*      g_timer;
     g_args_para*        g_args;
+	g_tool_para*        g_tool;
 }g_handler_para;
 
 
@@ -93,4 +106,28 @@ static inline void* xrealloc(void *ptr, size_t size)
 #define ONCE        0x2
 #define WAITE       0x3
 
+static inline void get_usec(struct timeval *time)
+{
+	gettimeofday(time, NULL);
+
+}
+
+static inline int time_expire(struct timeval start, int expire_us)
+{
+	struct timeval now;
+	int sec;
+	int diff_usec;
+	
+	gettimeofday(&now, NULL);
+
+	sec = now.tv_sec - start.tv_sec;
+	
+	diff_usec = sec * 1000000 + now.tv_usec - start.tv_usec;
+
+	return ((diff_usec - expire_us)>=0)?1:0;
+}
+
 #endif /* _GW_CORE_H_INCLUDED_ */
+
+
+

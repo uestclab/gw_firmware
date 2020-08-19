@@ -1,8 +1,7 @@
 #include "core.h"
 
-#include "cf_ops.h"
-
 #include "small_func.h"
+#include "read_file.h"
 
 #include "spi_control.h"
 #include "reg_control.h"
@@ -33,7 +32,7 @@ typedef struct __msg_fun_st
 }msg_fun_st;
 
 
-typedef int (*SIP_MSG_FUN)(const char *dst, void* cmd);
+typedef int (*SIP_MSG_FUN)(const char *dst, void* cmd, g_handler_para* g_handler);
 typedef struct __dst_fun_st{
 	const char *msg_dst;
 	SIP_MSG_FUN fun_ptr;
@@ -43,6 +42,5 @@ typedef struct __dst_fun_st{
 
 #include "event_process.h"
 #include "timer.h"
-#include "cmd_line.h"
 #include "parse_mon.h"
 
