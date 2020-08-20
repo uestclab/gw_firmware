@@ -80,14 +80,6 @@ int main(int argc,char** argv)
 	}
     g_handler->g_msg_queue = g_msg_queue;
 
-	// /* reg dev */
-	// g_RegDev_para* g_RegDev = NULL;
-	// int state = initRegdev(&g_RegDev, zlog_handler);
-	// if(state != 0 ){
-	// 	zlog_info(zlog_handler,"initRegdev create failed !");
-	// 	return 0;
-	// }
-
 	/* Timer handler */
 	event_timer_t* g_timer = NULL;
     int state = ngx_event_timer_init(&g_timer);
@@ -112,8 +104,9 @@ int main(int argc,char** argv)
 
 	/* init tools */
 	g_handler->g_tool = (g_tool_para*)malloc(sizeof(g_tool_para));
-	init_spi_info(&(g_handler->g_tool->spi_handler));
-	init_gpio_info(&(g_handler->g_tool->gpio_handler));
+	init_spi_info(&(g_handler->g_tool->spi_handler), zlog_handler);
+	init_gpio_info(&(g_handler->g_tool->gpio_handler), zlog_handler);
+	init_reg_info(&(g_handler->g_tool->reg_handler), zlog_handler);
 
 	test(g_handler);
 

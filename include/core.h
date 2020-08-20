@@ -50,11 +50,13 @@
 
 #include "spi_control.h"
 #include "gpio_control.h"
+#include "reg_control.h"
 
 
 typedef struct g_tool_para{
 	spi_info_t *spi_handler;
 	gpio_info_t *gpio_handler;
+	reg_info_t* reg_handler;
 }g_tool_para;
 
 typedef struct g_args_para{

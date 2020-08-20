@@ -10,7 +10,7 @@
 uint8_t default_rx[BUFF_LEN] = {0, };
 uint8_t padd_tx[BUFF_LEN] = {0, };
 
-void init_spi_info(spi_info_t** handler){
+void init_spi_info(spi_info_t** handler, zlog_category_t* log_handler){
 
 	*handler = (spi_info_t*)xzalloc(sizeof(spi_info_t));
 
@@ -22,10 +22,8 @@ void init_spi_info(spi_info_t** handler){
 	spi_handler->spimaxclk = 0x7A120;
 	spi_handler->spibpw = 8;
 	spi_handler->cnt = 0;
-	if(spi_handler->c){
-		free(spi_handler->c);
-		spi_handler->c = NULL;
-	}
+	spi_handler->c = NULL;
+	spi_handler->log_handler = log_handler;
 }
 
 void reset_spi_info(spi_info_t* handler){
@@ -37,8 +35,8 @@ void reset_spi_info(spi_info_t* handler){
 	handler->cnt = 0;
 	if(handler->c){
 		free(handler->c);
-		handler->c = NULL;
 	}
+	handler->c = NULL;
 }
 
 static void pabort(const char *s)
@@ -108,9 +106,11 @@ void close_spidev(spi_info_t* spi_handler){
 	close(spi_handler->fd);
 	if(spi_handler->spidev){
 		free(spi_handler->spidev);
+		spi_handler->spidev = NULL;
 	}
 	if(spi_handler->c){
 		free(spi_handler->c);
+		spi_handler->c = NULL;
 	}
 }
 
@@ -137,7 +137,7 @@ int parse_spidev(char* buf, spi_info_t* spi_handler){
     root = cJSON_Parse(buf);
 
 	if(cJSON_HasObjectItem(root,"spidev") == 0){
-		//printf("invalid spi json !\n");
+		printf("invalid spi json !\n");
 		return -1;
 	}
 	item = cJSON_GetObjectItem(root , "spidev");
@@ -163,7 +163,7 @@ int parse_spidev(char* buf, spi_info_t* spi_handler){
 
 	int op_cnt = cJSON_GetArraySize(array_item);
 	spi_handler->cnt = op_cnt;
-	printf("op_cnt = %d \n", op_cnt);
+	zlog_info(spi_handler->log_handler, "spi op_cnt = %d \n", op_cnt);
 
 	spi_handler->c = (struct spi_op_cmd_s*)xzalloc(sizeof(struct spi_op_cmd_s) * op_cnt);
 
@@ -229,7 +229,6 @@ int parse_spidev(char* buf, spi_info_t* spi_handler){
 }
 
 int process_spi_cmd(spi_info_t* spi_handler){
-
 	uint32_t instuction;
 	int con1 = 1;
 	int con2 = 1;
@@ -291,6 +290,7 @@ int process_spi_cmd(spi_info_t* spi_handler){
 }
 
 int spi_tool(char* jsonBuf, spi_info_t *spi_handler){
+	reset_spi_info(spi_handler);
 	if(parse_spidev(jsonBuf,spi_handler) != 0){
 		free(jsonBuf);
 		return -1;
@@ -306,6 +306,5 @@ int spi_tool(char* jsonBuf, spi_info_t *spi_handler){
 	}
 	free(jsonBuf);
 	close_spidev(spi_handler);
-
 	return 0;
 }

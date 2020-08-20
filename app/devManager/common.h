@@ -21,6 +21,7 @@ typedef enum msg_event{
 	MSG_NO_MONTAB_WORK_LEFT,
 	MSG_MONTAB_PROCESS_FAULT,
 	MSG_EXIT,
+	MSG_TEST,
 }msg_event;
 
 // 表驱动

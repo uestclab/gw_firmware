@@ -17,6 +17,7 @@ struct gpio_op_cmd_s{
 #pragma pack()
 
 typedef struct gpio_info_t{
+	zlog_category_t* log_handler;
 	struct list_head headNode;
 	int item_num;
 }gpio_info_t;
@@ -28,9 +29,7 @@ typedef struct gpio_node_t{
 	struct gpio_op_cmd_s cmd;
 }gpio_node_t;
 
-void init_gpio_info(gpio_info_t** handler);
-void reset_gpio_info(gpio_info_t* handler);
-
+void init_gpio_info(gpio_info_t** handler, zlog_category_t* log_handler);
 int gpio_tool(char* jsonBuf, gpio_info_t *gpio_handler);
 
 #endif

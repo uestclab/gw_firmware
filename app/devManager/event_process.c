@@ -31,7 +31,13 @@ void completed_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, 
 
 void montab_fault_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
     zlog_info(g_handler->log_handler, " ---------------- EVENT : MSG_MONTAB_PROCESS_FAULT: \n");
-    zlog_info(g_handler->log_handler, "restart confige process : sleep 5s\n");
+    zlog_info(g_handler->log_handler, "restart confige process : sleep 5s --- ret = %d \n", tmp_data_len);
+    
+    if(tmp_data_len == -100){
+        printf("204B halt !!!!!! \n");
+        sleep(7200);
+    }
+
     sleep(5);
     g_handler->g_args->control_run_num = 0;
     run_action_by_step(g_handler, g_handler->g_threadpool);
@@ -42,8 +48,15 @@ void exit_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int t
     g_handler->g_args->exit_code = 1;
 }
 
+void test_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
+    zlog_info(g_handler->log_handler, "test_fun fun \n");
+    system("sh /run/media/mmcblk1p1/script/looptest.sh");
+    zlog_info(g_handler->log_handler, "system call fun \n");
+}
+
 msg_fun_st msg_flow[] = 
-{ 
+{
+    {MSG_TEST, test_fun},
     {MSG_TIMEOUT, timeout_fun},
     {MSG_SHOW_WORKQUEUE, show_msg_info_fun},
     {MSG_CLI, init_fun}, 

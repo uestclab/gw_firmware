@@ -1,11 +1,12 @@
 #include "common.h"
 #include "cJSON.h"
 
-void init_gpio_info(gpio_info_t** handler){
+void init_gpio_info(gpio_info_t** handler, zlog_category_t* log_handler){
 	*handler = (gpio_info_t*)xzalloc(sizeof(gpio_info_t));
 	gpio_info_t* gpio_handler = *handler;
 	gpio_handler->item_num = 0;
 	INIT_LIST_HEAD(&(gpio_handler->headNode));
+	gpio_handler->log_handler = log_handler;
 }
 
 void reset_gpio_info(gpio_info_t* handler){
@@ -20,7 +21,8 @@ void reset_gpio_info(gpio_info_t* handler){
     }
 
     if(cnt != handler->item_num){
-        printf("reset_gpio_info error cnt !\n");
+        printf("!!!!!!!!! ----- reset_gpio_info error cnt ! cnt = %d , item_num = %d \n", cnt , handler->item_num);
+		sleep(120);
     }
 
 	INIT_LIST_HEAD(&(handler->headNode));
@@ -38,7 +40,7 @@ int parse_gpio(char* buf, gpio_info_t* handler){
 
 	int op_cnt = cJSON_GetArraySize(array_item);
 	handler->item_num = op_cnt;
-	//printf("op_cnt = %d \n", op_cnt);
+	zlog_info(handler->log_handler, "gpio : op_cnt = %d \n", op_cnt);
 
 	for(int i=0;i<op_cnt;i++){
 		gpio_node_t* node = (gpio_node_t*)xzalloc(sizeof(gpio_node_t));
@@ -90,7 +92,6 @@ int parse_gpio(char* buf, gpio_info_t* handler){
 }
 
 int process_gpio_cmd(gpio_info_t* handler){
-
 	int ret = 0;
 	struct list_head *pos = NULL;
 	gpio_node_t* tmp_node = NULL;
@@ -107,9 +108,9 @@ int process_gpio_cmd(gpio_info_t* handler){
 		if(GPIO_DIR_OUT == tmp_cmd->dir){
 			// write
 			if(gpio_set_val(tmp_cmd->gpio_no, tmp_cmd->val) < 0){
-				printf("write failed : gpio_no = %d , val = %d \n", tmp_cmd->gpio_no, tmp_cmd->val);
+				zlog_info(handler->log_handler, "write failed : gpio_no = %d , val = %d \n", tmp_cmd->gpio_no, tmp_cmd->val);
 			}else{
-				printf("write success : gpio_no = %d , val = %d \n", tmp_cmd->gpio_no, tmp_cmd->val);
+				;//zlog_info(handler->log_handler, "write success : gpio_no = %d , val = %d \n", tmp_cmd->gpio_no, tmp_cmd->val);
 			}
 
 			if(tmp_cmd->waite_time){
@@ -125,7 +126,7 @@ int process_gpio_cmd(gpio_info_t* handler){
 			}else{
 				if(tmp_node->read_expect){
 					if(tmp_cmd->excep_val == read_val){
-						printf("read == expect: gpio_no = %d , read_val = %d, expect = %d \n", 
+						zlog_info(handler->log_handler, "read == expect: gpio_no = %d , read_val = %d, expect = %d \n", 
 							tmp_cmd->gpio_no, read_val, tmp_cmd->excep_val);
 					}else{
 						printf("read != expect: gpio_no = %d , read_val = %d, expect = %d \n", 
@@ -133,7 +134,7 @@ int process_gpio_cmd(gpio_info_t* handler){
                         return -1;						
 					}
 				}else{
-					printf("read : gpio_no = %d , read_val = %d \n", tmp_cmd->gpio_no, read_val);
+					zlog_info(handler->log_handler, "read : gpio_no = %d , read_val = %d \n", tmp_cmd->gpio_no, read_val);
 				}
 			}
 		}
@@ -145,6 +146,7 @@ int process_gpio_cmd(gpio_info_t* handler){
 
 
 int gpio_tool(char* jsonBuf, gpio_info_t *gpio_handler){
+	reset_gpio_info(gpio_handler);
 	if(parse_gpio(jsonBuf,gpio_handler) == -1){
         free(jsonBuf);
 		return -1;

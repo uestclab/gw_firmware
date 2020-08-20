@@ -26,6 +26,7 @@ struct spi_op_cmd_s{
 };
 
 typedef struct spi_info_t{
+	zlog_category_t* log_handler;
 	char *spidev;
 	int fd;
 	uint32_t spimode;
@@ -35,8 +36,7 @@ typedef struct spi_info_t{
 	struct spi_op_cmd_s *c;
 }spi_info_t;
 
-void init_spi_info(spi_info_t** handler);
-void reset_spi_info(spi_info_t* handler);
+void init_spi_info(spi_info_t** handler, zlog_category_t* log_handler);
 
 int spi_tool(char* jsonBuf, spi_info_t *spi_handler);
 

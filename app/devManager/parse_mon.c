@@ -156,21 +156,12 @@ int parse_inittab(parser_t **parser, g_handler_para* g_handler)
 void display(g_handler_para* g_handler){
 	zlog_info(g_handler->log_handler,"  ---------------- display () --------------------------\n");
 	g_args_para* g_args = g_handler->g_args;
-    // zlog_info(g_handler->log_handler,"  ---------------- excel () --------------------------\n");
-    // excel_node_s* pnode = NULL;
-	// list_for_each_entry(pnode, &g_args->excel_list, next) {
-	// 	if(pnode->command != NULL){    
-	// 		zlog_info(g_handler->log_handler," seq: %d , name: %s, action_type: %d, command: %s \n" , 
-    //             pnode->seq, pnode->name, pnode->action_type, pnode->command);
-	// 	}
-	// }
-
     zlog_info(g_handler->log_handler,"  ---------------- run () --------------------------\n");
     run_node_s* pnode_run = NULL;
 	list_for_each_entry(pnode_run, &g_args->run_list, next) {
 		if(pnode_run->dst != NULL){    
-			zlog_info(g_handler->log_handler," control_seq_num : %d -- seq: %d , dst: %s, conf: %s, st_file: %s, st_to: %d \n" , 
-                pnode_run->seq_num, pnode_run->seq, pnode_run->dst, pnode_run->con_file, pnode_run->st_file_list, pnode_run->st_to);
+			zlog_info(g_handler->log_handler," control_seq_num : %d -- dst: %s, conf: %s, st_file: %s, st_to: %d \n" , 
+                pnode_run->seq_num, pnode_run->dst, pnode_run->con_file, pnode_run->st_file_list, pnode_run->st_to);
 		}
 	}
 
@@ -195,13 +186,14 @@ int check_state(char* json_path, g_handler_para* g_handler){
 	int ret = 0;
 	if(dst != NULL){
 		if(0 == strcmp(dst, "gpio")){
-			reset_gpio_info(g_handler->g_tool->gpio_handler);
 			ret = gpio_tool(jsonBuf, g_handler->g_tool->gpio_handler);
-		}else if(0 == strcmp(dst, "spi")){
-			reset_spi_info(g_handler->g_tool->spi_handler);
+		}else if(0 == strcmp(dst, "adc") || 0 == strcmp(dst, "dac") || 0 == strcmp(dst, "hmc") || 0 == strcmp(dst, "lmx")){
 			ret = spi_tool(jsonBuf, g_handler->g_tool->spi_handler);
 		}else if(0 == strcmp(dst, "reg")){
-			;
+			ret = reg_tool(jsonBuf, g_handler->g_tool->reg_handler);
+			if(ret != 0){
+				ret = -100; // for loop test
+			}
 		}
 		return ret;
 	}else{
@@ -216,6 +208,8 @@ int shell_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	if(0 == strcmp(run_cmd->con_file, "exit")){
 		printf("shell proc exit \n");
 		postMsg(MSG_EXIT,NULL,0,NULL,0,g_handler->g_msg_queue);
+	}else if(0 == strcmp(run_cmd->con_file, "completed")){
+		postMsg(MSG_TEST,NULL,0,NULL,0,g_handler->g_msg_queue);
 	}else{
 		system(run_cmd->con_file);
 	}
@@ -225,12 +219,14 @@ int shell_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 int spi_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	run_node_s* run_cmd = (run_node_s*)cmd;
 	zlog_info(log_handler, "spi_tool : %s\n", run_cmd->con_file);
-	char *jsonBuf = get_json_buf(run_cmd->con_file);
-	if(spi_tool(jsonBuf, g_handler->g_tool->spi_handler) != 0){
-		return -1;
+	if(run_cmd->con_file){
+		char *jsonBuf = get_json_buf(run_cmd->con_file);
+		if(spi_tool(jsonBuf, g_handler->g_tool->spi_handler) != 0){
+			return -1;
+		}
 	}
 	if(run_cmd->st_file_tk_no){
-		zlog_info(log_handler, "spi : check_state --- \n");
+		zlog_info(log_handler, "spi : check_state --- ****** \n");
 		if(check_state(run_cmd->st_file_list, g_handler) != 0){
 			return -2;
 		}
@@ -242,13 +238,15 @@ int spi_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 int gpio_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	run_node_s* run_cmd = (run_node_s*)cmd;
 	zlog_info(log_handler, "gpio_tool : %s\n", run_cmd->con_file);
-	char* jsonBuf = get_json_buf(run_cmd->con_file);
-	if(gpio_tool(jsonBuf, g_handler->g_tool->gpio_handler) != 0){
-		return -1;
+	if(run_cmd->con_file){
+		char* jsonBuf = get_json_buf(run_cmd->con_file);
+		if(gpio_tool(jsonBuf, g_handler->g_tool->gpio_handler) != 0){
+			return -1;
+		}
 	}
 
 	if(run_cmd->st_file_tk_no){
-		zlog_info(log_handler, "gpio : check_state --- \n");
+		zlog_info(log_handler, "gpio : check_state --- ****** \n");
 		if(check_state(run_cmd->st_file_list, g_handler) != 0){
 			return -2;
 		}
@@ -259,7 +257,21 @@ int gpio_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 
 int reg_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	run_node_s* run_cmd = (run_node_s*)cmd;
-	zlog_info(log_handler, "reg_proc --- dst : %s\n", dst);
+	zlog_info(log_handler, "reg_tool : %s\n", run_cmd->con_file);
+	if(run_cmd->con_file){
+		char* jsonBuf = get_json_buf(run_cmd->con_file);
+		if(reg_tool(jsonBuf,g_handler->g_tool->reg_handler) != 0){
+			return -1;
+		}
+	}
+
+	if(run_cmd->st_file_tk_no){
+		zlog_info(log_handler, "reg : check_state --- ****** \n");
+		if(check_state(run_cmd->st_file_list, g_handler) != 0){
+			return -2;
+		}
+	}
+
 	return 0;
 }
 
@@ -297,23 +309,21 @@ int process_dispatch(run_node_s* pnode, g_handler_para* g_handler){
 void* montab_work_thread(void* args){
 	g_handler_para* g_handler = (g_handler_para*)args;
     g_args_para* g_args = g_handler->g_args;
-    // sleep(1);
-
+	int ret = 0;
     int control_num = g_args->control_run_num;
     run_node_s* pnode = NULL;
-	zlog_info(g_handler->log_handler, "control_num = %d \n" , control_num );
 	list_for_each_entry(pnode, &g_args->run_list, next) {
 		if(pnode->seq_num == control_num){    
 			zlog_info(g_handler->log_handler," control_num : %d ---- seq: %d , dst: %s, conf: %s, st_file: %s, st_to: %d \n" , 
                 control_num, pnode->seq, pnode->dst, pnode->con_file, pnode->st_file_list, pnode->st_to);
 
 			// process
-			if(process_dispatch(pnode,g_handler) == 0){
+			if((ret = process_dispatch(pnode,g_handler)) == 0){
 				g_args->control_run_num ++;
 				postMsg(MSG_MONTAB_WORK_IDLE,NULL,0,NULL,0,g_handler->g_msg_queue);
 				return NULL;
 			}else{
-				postMsg(MSG_MONTAB_PROCESS_FAULT,NULL,0,NULL,0,g_handler->g_msg_queue);
+				postMsg(MSG_MONTAB_PROCESS_FAULT,NULL,0,NULL,ret,g_handler->g_msg_queue);
 				return NULL;
 			}
 		}
@@ -336,6 +346,5 @@ int start_parse(g_handler_para* g_handler){
 
 // step by control_run_num
 void run_action_by_step(g_handler_para* g_handler, ThreadPool* g_threadpool){
-
     AddWorker(montab_work_thread,(void*)g_handler,g_threadpool);
 }
