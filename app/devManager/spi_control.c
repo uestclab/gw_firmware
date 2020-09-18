@@ -163,7 +163,7 @@ int parse_spidev(char* buf, spi_info_t* spi_handler){
 
 	int op_cnt = cJSON_GetArraySize(array_item);
 	spi_handler->cnt = op_cnt;
-	zlog_info(spi_handler->log_handler, "spi op_cnt = %d \n", op_cnt);
+	//zlog_info(spi_handler->log_handler, "spi op_cnt = %d \n", op_cnt);
 
 	spi_handler->c = (struct spi_op_cmd_s*)xzalloc(sizeof(struct spi_op_cmd_s) * op_cnt);
 
@@ -252,18 +252,18 @@ int process_spi_cmd(spi_info_t* spi_handler){
 			for(;;){
 				instuction = spi_handler->c[i].instuction;
 				transfer(spi_handler->fd, (char*)(&instuction), default_rx, 3, spi_handler->spimaxclk, spi_handler->spibpw);
-				//printf("for: instruction_data 0x%x\n", htonl(instuction)>>8);
+				printf("for: instruction_data 0x%x\n", htonl(instuction)>>8);
 				char ret_str[16];
-				snprintf(ret_str, ARRAY_SIZE(ret_str), "0x%x%x%x", default_rx[0], default_rx[1], default_rx[2]);
-				//printf("read cmd return value : %s \n", ret_str);
+				snprintf(ret_str, ARRAY_SIZE(ret_str), "0x%02X%02X%02X", default_rx[0], default_rx[1], default_rx[2]);
+				printf("read cmd return value : %s \n", ret_str);
 				if(spi_handler->c[i].ifcon_flag1){
 					con1 = (((default_rx[2] & spi_handler->c[i].ifcon_mask1) == spi_handler->c[i].ifcon1) ) ;
 				}
 
 				if(spi_handler->c[i].ifcon_flag2){
 					con2 = (((default_rx[2] & spi_handler->c[i].ifcon_mask2) == spi_handler->c[i].ifcon2) ) ;
-					//printf("con2 = %d --- ret : 0x%x , mask : 0x%x , ifcon2 : 0x%x\n", con2, 
-					// default_rx[2], spi_handler->c[i].ifcon_mask2, spi_handler->c[i].ifcon2);
+					printf("con2 = %d --- ret : 0x%x , mask : 0x%x , ifcon2 : 0x%x\n", con2, 
+					default_rx[2], spi_handler->c[i].ifcon_mask2, spi_handler->c[i].ifcon2);
 				}
 
 				if(spi_handler->c[i].waite_time){
@@ -274,7 +274,7 @@ int process_spi_cmd(spi_info_t* spi_handler){
 					break;
 				}else{
 					if(time_expire(start_time, spi_handler->c[i].waite_time_ifcon)){
-						//printf("read state error -- instruction_data 0x%x\n", htonl(instuction)>>8);
+						printf("read state error -- instruction_data 0x%x\n", htonl(instuction)>>8);
 						state = 1;
 						break;
 					}

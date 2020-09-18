@@ -72,7 +72,7 @@ int process_reg_json(reg_info_t* reg_info, char* buf){
 	// read return item
 	array_item = cJSON_GetObjectItem(root , "op_cmd");
 	int op_cnt = cJSON_GetArraySize(array_item);
-	zlog_info(reg_info->log_handler, "reg op_cnt = %d \n", op_cnt);
+	//zlog_info(reg_info->log_handler, "reg op_cnt = %d \n", op_cnt);
 	reg_info->c = (struct reg_op_cmd_s*)xzalloc(sizeof(struct reg_op_cmd_s) * op_cnt);
 	reg_info->cnt = op_cnt;
 
@@ -132,16 +132,17 @@ int process_reg_json(reg_info_t* reg_info, char* buf){
 		}else{
 			char* str_value = run_read_cmd(addr);
 			if(str_value){
-				zlog_info(reg_info->log_handler,"read: devmem 0x%x --- val = %s\n", addr, str_value);
+				//zlog_info(reg_info->log_handler,"read: devmem 0x%x --- val = %s\n", addr, str_value);
 				if(reg_info->read_expect){
 					int read_val = get_item_val(str_value);
 					if(read_val != reg_info->c[i].expect){
 						free(str_value);
 						printf("reg : read != expect expect = 0x%x , read = 0x%x\n", reg_info->c[i].expect, read_val);
+						zlog_info(reg_info->log_handler, "reg : read != expect expect = 0x%x , read = 0x%x\n", reg_info->c[i].expect, read_val);
 						ret = -1;
 						goto exit;
 					}else{
-						zlog_info(reg_info->log_handler, "reg : read == expect expect = 0x%x , read = 0x%x\n", reg_info->c[i].expect, read_val);
+						//zlog_info(reg_info->log_handler, "reg : read == expect expect = 0x%x , read = 0x%x\n", reg_info->c[i].expect, read_val);
 					}
 				}
 				free(str_value);

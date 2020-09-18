@@ -164,10 +164,11 @@ int gpio_get_val(int gpio_no, unsigned char *val)
 		ret = fd;
 		goto exit;
 	}
-
+	sleep(1);
 	//lseek(fd,0,SEEK_SET);
 	memset(gpio_path,0,3);
 	ret = read(fd,gpio_path,3);
+	printf("gpio : ret = %d , gpio_path = %s\n", ret, gpio_path);
 	if(ret < 0){
 		goto exit;
 	}

@@ -1,5 +1,6 @@
 #include "common.h"
 #include "cmd_line.h"
+#include "led.h"
 
 zlog_category_t * initLog(const char* path, char* app_name){
 	int rc;
@@ -101,6 +102,12 @@ int main(int argc,char** argv)
 	// 	zlog_info(zlog_handler,"No server thread created \n");
 	// 	return 0;
 	// }
+
+	/* led init */
+	if(init_led(zlog_handler) < 0){
+		zlog_info(zlog_handler, "init led failure !\n");
+		return 0;
+	}
 
 	/* init tools */
 	g_handler->g_tool = (g_tool_para*)malloc(sizeof(g_tool_para));

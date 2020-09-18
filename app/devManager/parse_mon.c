@@ -98,12 +98,12 @@ int parse_run(parser_t *parser, void *args)
 				new_act->st_file_list = (char *)xzalloc(len_tk[3] + 1);
 				if(new_act->st_file_list){
 					strcpy((void*)new_act->st_file_list, tokens[3]);
-                    zlog_info(log_handler, "new_act->st_file_list : %s \n", new_act->st_file_list);
+                    // zlog_info(log_handler, "new_act->st_file_list : %s \n", new_act->st_file_list);
 					ret = st_file_list_parse(new_act->st_file_list, &(new_act->st_file_tk), &(new_act->st_file_tk_no));
 					if(ret < 0){
 						goto exit;
 					}
-					zlog_info(log_handler, "new_act->st_file_tk_no = %d \n", new_act->st_file_tk_no);
+					//zlog_info(log_handler, "new_act->st_file_tk_no = %d \n", new_act->st_file_tk_no);
 					for(i = 0; i < new_act->st_file_tk_no; i++){
 						new_stat = (stat_node_s*)xzalloc(sizeof(stat_node_s));
 						if(NULL == new_stat){
@@ -189,9 +189,14 @@ int check_state(char* json_path, g_handler_para* g_handler){
 			ret = gpio_tool(jsonBuf, g_handler->g_tool->gpio_handler);
 		}else if(0 == strcmp(dst, "adc") || 0 == strcmp(dst, "dac") || 0 == strcmp(dst, "hmc") || 0 == strcmp(dst, "lmx")){
 			ret = spi_tool(jsonBuf, g_handler->g_tool->spi_handler);
+			if(ret !=0){
+				zlog_info(g_handler->log_handler, "spi : %s \n", json_path);
+				ret = -101;
+			}
 		}else if(0 == strcmp(dst, "reg")){
 			ret = reg_tool(jsonBuf, g_handler->g_tool->reg_handler);
 			if(ret != 0){
+				zlog_info(g_handler->log_handler, "reg : %s \n", json_path);
 				ret = -100; // for loop test
 			}
 		}
@@ -218,7 +223,7 @@ int shell_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 
 int spi_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	run_node_s* run_cmd = (run_node_s*)cmd;
-	zlog_info(log_handler, "spi_tool : %s\n", run_cmd->con_file);
+	//zlog_info(log_handler, "spi_tool : %s\n", run_cmd->con_file);
 	if(run_cmd->con_file){
 		char *jsonBuf = get_json_buf(run_cmd->con_file);
 		if(spi_tool(jsonBuf, g_handler->g_tool->spi_handler) != 0){
@@ -226,9 +231,9 @@ int spi_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 		}
 	}
 	if(run_cmd->st_file_tk_no){
-		zlog_info(log_handler, "spi : check_state --- ****** \n");
+		//zlog_info(log_handler, "spi : check_state --- ****** \n");
 		if(check_state(run_cmd->st_file_list, g_handler) != 0){
-			return -2;
+			return -101;
 		}
 	}
 
@@ -237,7 +242,7 @@ int spi_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 
 int gpio_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	run_node_s* run_cmd = (run_node_s*)cmd;
-	zlog_info(log_handler, "gpio_tool : %s\n", run_cmd->con_file);
+	//zlog_info(log_handler, "gpio_tool : %s\n", run_cmd->con_file);
 	if(run_cmd->con_file){
 		char* jsonBuf = get_json_buf(run_cmd->con_file);
 		if(gpio_tool(jsonBuf, g_handler->g_tool->gpio_handler) != 0){
@@ -246,9 +251,9 @@ int gpio_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	}
 
 	if(run_cmd->st_file_tk_no){
-		zlog_info(log_handler, "gpio : check_state --- ****** \n");
+		//zlog_info(log_handler, "gpio : check_state --- ****** \n");
 		if(check_state(run_cmd->st_file_list, g_handler) != 0){
-			return -2;
+			return -3;
 		}
 	}
 
@@ -257,7 +262,7 @@ int gpio_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 
 int reg_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	run_node_s* run_cmd = (run_node_s*)cmd;
-	zlog_info(log_handler, "reg_tool : %s\n", run_cmd->con_file);
+	//zlog_info(log_handler, "reg_tool : %s\n", run_cmd->con_file);
 	if(run_cmd->con_file){
 		char* jsonBuf = get_json_buf(run_cmd->con_file);
 		if(reg_tool(jsonBuf,g_handler->g_tool->reg_handler) != 0){
@@ -266,9 +271,13 @@ int reg_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	}
 
 	if(run_cmd->st_file_tk_no){
-		zlog_info(log_handler, "reg : check_state --- ****** \n");
-		if(check_state(run_cmd->st_file_list, g_handler) != 0){
-			return -2;
+		//zlog_info(log_handler, "reg : check_state --- ****** \n");
+		int ret = check_state(run_cmd->st_file_list, g_handler);
+		if(ret  != 0){
+			if(ret == -100){
+				return ret;
+			}
+			return -4;
 		}
 	}
 
@@ -277,7 +286,12 @@ int reg_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 
 int tmp_fun(const char *dst, void* cmd, g_handler_para* g_handler){
 	run_node_s* run_cmd = (run_node_s*)cmd;
-	zlog_info(log_handler, "tmp_fun --- dst : %s\n", dst);
+	//zlog_info(log_handler, "tmp_fun --- dst : %s\n", dst);
+	return 0;
+}
+
+int mon_proc(const char *dst, void* cmd, g_handler_para* g_handler){
+	run_node_s* run_cmd = (run_node_s*)cmd;
 	return 0;
 }
 
@@ -290,6 +304,7 @@ dst_fun_st dst_flow[] = {
 	{"reg",reg_proc},
 	{"rf",tmp_fun},
 	{"gpio",gpio_proc},
+	{"mon",mon_proc},
 };
 
 // gpio , adc ,dac, hmc, lmx, reg, rf, shell
@@ -314,16 +329,17 @@ void* montab_work_thread(void* args){
     run_node_s* pnode = NULL;
 	list_for_each_entry(pnode, &g_args->run_list, next) {
 		if(pnode->seq_num == control_num){    
-			zlog_info(g_handler->log_handler," control_num : %d ---- seq: %d , dst: %s, conf: %s, st_file: %s, st_to: %d \n" , 
-                control_num, pnode->seq, pnode->dst, pnode->con_file, pnode->st_file_list, pnode->st_to);
+			// zlog_info(g_handler->log_handler," control_num : %d ---- dst: %s, conf: %s, st_file: %s, st_to: %d \n" , 
+            //     control_num, pnode->dst, pnode->con_file, pnode->st_file_list, pnode->st_to);
 
 			// process
-			if((ret = process_dispatch(pnode,g_handler)) == 0){
+			ret = process_dispatch(pnode,g_handler);
+			if(ret  == 0){
 				g_args->control_run_num ++;
 				postMsg(MSG_MONTAB_WORK_IDLE,NULL,0,NULL,0,g_handler->g_msg_queue);
 				return NULL;
 			}else{
-				postMsg(MSG_MONTAB_PROCESS_FAULT,NULL,0,NULL,ret,g_handler->g_msg_queue);
+				postMsg(MSG_MONTAB_PROCESS_FAULT,NULL,ret,NULL,0,g_handler->g_msg_queue);
 				return NULL;
 			}
 		}
@@ -340,7 +356,7 @@ int start_parse(g_handler_para* g_handler){
     if(parse_inittab(&parser, g_handler) == -1){
         return -1;
     }
-    display(g_handler);
+    //display(g_handler);
     return 0;
 }
 

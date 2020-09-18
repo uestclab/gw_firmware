@@ -1,7 +1,8 @@
 #include "common.h"
+#include "led.h"
 
 void show_msg_info_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
-    zlog_info(g_handler->log_handler, "show_msg_info_fun fun \n");
+    ////zlog_info(g_handler->log_handler, "show_msg_info_fun fun \n");
 }
 
 /* typedef void (*event_handler_pt)(ngx_event_t *ev); */
@@ -12,30 +13,37 @@ void checkTaskToTimer(ngx_event_t *ev){
 }
 
 void timeout_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
-    zlog_info(g_handler->log_handler, "timeout fun \n");
+    //zlog_info(g_handler->log_handler, "timeout fun \n");
     addTimeOutWorkToTimer(g_handler->g_msg_queue, checkTaskToTimer, 1800000, g_handler->g_timer);
 }
 
 void init_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
-    zlog_info(g_handler->log_handler, "init_fun fun \n");
+    //zlog_info(g_handler->log_handler, "init_fun fun \n");
 }
 
 void work_idle_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
-    zlog_info(g_handler->log_handler, " ---------------- EVENT : MSG_MONTAB_WORK_IDLE: \n");
+    //zlog_info(g_handler->log_handler, " ---------------- EVENT : MSG_MONTAB_WORK_IDLE: \n");
     run_action_by_step(g_handler, g_handler->g_threadpool);
 }
 
 void completed_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
     zlog_info(g_handler->log_handler, "completed_fun fun \n");
+    led_green(g_handler->log_handler);
+    system("sh /run/media/mmcblk1p1/script/completed.sh");
+    sleep(40);
+    //system("reboot");
 }
 
 void montab_fault_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
     zlog_info(g_handler->log_handler, " ---------------- EVENT : MSG_MONTAB_PROCESS_FAULT: \n");
-    zlog_info(g_handler->log_handler, "restart confige process : sleep 5s --- ret = %d \n", tmp_data_len);
-    
-    if(tmp_data_len == -100){
+    zlog_info(g_handler->log_handler, "restart confige process : --- ret = %d \n", buf_len);
+    led_blue(g_handler->log_handler);
+    if(buf_len == -100){
         printf("204B halt !!!!!! \n");
-        sleep(7200);
+        zlog_info(g_handler->log_handler, "204B halt !!!!!! \n");
+    }else if(buf_len == -101){
+        printf("dac halt !!!!!! \n");
+        zlog_info(g_handler->log_handler, "dac halt !!!!!! \n");
     }
 
     sleep(5);
@@ -44,14 +52,14 @@ void montab_fault_fun(long int frame_type, char *buf, int buf_len, void* tmp_dat
 }
 
 void exit_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
-    zlog_info(g_handler->log_handler, "exit_fun fun \n");
+    //zlog_info(g_handler->log_handler, "exit_fun fun \n");
     g_handler->g_args->exit_code = 1;
 }
 
 void test_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
-    zlog_info(g_handler->log_handler, "test_fun fun \n");
-    system("sh /run/media/mmcblk1p1/script/looptest.sh");
-    zlog_info(g_handler->log_handler, "system call fun \n");
+    //zlog_info(g_handler->log_handler, "test_fun fun \n");
+    //system("sh /run/media/mmcblk1p1/script/looptest.sh");
+    //zlog_info(g_handler->log_handler, "system call fun \n");
 }
 
 msg_fun_st msg_flow[] = 
@@ -99,6 +107,7 @@ int processMessage_table_drive(struct msg_st* msgData, g_handler_para* g_handler
 void 
 eventLoop(g_handler_para* g_handler){
 
+    led_blue(g_handler->log_handler);
     run_action_by_step(g_handler, g_handler->g_threadpool);
     addTimeOutWorkToTimer(g_handler->g_msg_queue, checkTaskToTimer, 5000, g_handler->g_timer);
 	while(!g_handler->g_args->exit_code){
