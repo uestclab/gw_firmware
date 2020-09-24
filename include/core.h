@@ -52,6 +52,10 @@
 #include "gpio_control.h"
 #include "reg_control.h"
 
+typedef struct g_peripheral_para{
+	int rf_on;
+	int switch_on;
+}g_peripheral_para;
 
 typedef struct g_tool_para{
 	spi_info_t *spi_handler;
@@ -76,6 +80,7 @@ typedef struct g_handler_para{
     event_timer_t*      g_timer;
     g_args_para*        g_args;
 	g_tool_para*        g_tool;
+	g_peripheral_para*  g_peripheral;
 }g_handler_para;
 
 

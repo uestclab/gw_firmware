@@ -1,6 +1,7 @@
 #include "common.h"
 #include "cmd_line.h"
 #include "led.h"
+#include "monitor.h"
 
 zlog_category_t * initLog(const char* path, char* app_name){
 	int rc;
@@ -102,6 +103,18 @@ int main(int argc,char** argv)
 	// 	zlog_info(zlog_handler,"No server thread created \n");
 	// 	return 0;
 	// }
+
+	/* monitor init , not start */
+	if(init_monitor(zlog_handler) < 0){
+		zlog_info(zlog_handler, "init monitor failure !\n");
+		return 0;
+	}
+
+	/* Peripheral device check */
+	if(peripheral_check(g_handler) < 0){
+		zlog_info(zlog_handler, "init peripheral_check failure !\n");
+		return 0;
+	}
 
 	/* led init */
 	if(init_led(zlog_handler) < 0){

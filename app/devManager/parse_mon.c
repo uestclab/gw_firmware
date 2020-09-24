@@ -284,9 +284,14 @@ int reg_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	return 0;
 }
 
-int tmp_fun(const char *dst, void* cmd, g_handler_para* g_handler){
+int rf_fun(const char *dst, void* cmd, g_handler_para* g_handler){
 	run_node_s* run_cmd = (run_node_s*)cmd;
-	//zlog_info(log_handler, "tmp_fun --- dst : %s\n", dst);
+	zlog_info(log_handler, "rf_fun --- dst : %s\n", dst);
+
+	if(g_handler->g_peripheral->rf_on == 1){
+		return 0;
+	}
+
 	return 0;
 }
 
@@ -302,7 +307,7 @@ dst_fun_st dst_flow[] = {
 	{"hmc",spi_proc},
 	{"lmx",spi_proc},
 	{"reg",reg_proc},
-	{"rf",tmp_fun},
+	{"rf",rf_fun},
 	{"gpio",gpio_proc},
 	{"mon",mon_proc},
 };

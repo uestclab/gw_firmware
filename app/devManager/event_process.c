@@ -75,19 +75,6 @@ msg_fun_st msg_flow[] =
     {MSG_EXIT,exit_fun},
 };
 
-void parseEventJson(char* event_buf, int buf_len){
-	cJSON * root = NULL;
-    cJSON * item = NULL;
-    root = cJSON_Parse(event_buf);
-    if(cJSON_HasObjectItem(root,"localIp") == 1){
-        item = cJSON_GetObjectItem(root,"localIp");
-    }
-    if(cJSON_HasObjectItem(root,"currentTime") == 1){
-        item = cJSON_GetObjectItem(root,"currentTime");
-    }
-    cJSON_Delete(root);
-}
-
 int processMessage_table_drive(struct msg_st* msgData, g_handler_para* g_handler) 
 { 
     int type_num = sizeof(msg_flow) / sizeof(msg_fun_st); 
