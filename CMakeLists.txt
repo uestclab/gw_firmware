@@ -32,7 +32,7 @@ SET(CMAKE_VERBOSE_MAKEFILE ON)
 SET(ROOT_PATH ".")
 
 #app
-add_subdirectory(${PROJECT_SOURCE_DIR}/app/initdev)
+add_subdirectory(${PROJECT_SOURCE_DIR}/app/devManager)
 
 
 

@@ -1,4 +1,7 @@
 #include "common.h"
+#include "cmd_line.h"
+#include "led.h"
+#include "monitor.h"
 
 zlog_category_t * initLog(const char* path, char* app_name){
 	int rc;
@@ -32,14 +35,28 @@ void test(g_handler_para* g_handler){
 
 }
 
+int init_args_para(g_args_para** g_args){
+	*g_args = (g_args_para*)malloc(sizeof(g_args_para));
+    if(*g_args == NULL){
+		return -1;
+    }
+
+	(*g_args)->control_run_num = 0;
+	INIT_LIST_HEAD(&((*g_args)->excel_list));
+	INIT_LIST_HEAD(&((*g_args)->run_list));
+
+	(*g_args)->exit_code = 0;
+
+	return 0;
+}
+
 int main(int argc,char** argv)
 {
-
-    g_args_para* g_args = (g_args_para*)malloc(sizeof(g_args_para));
-    if(g_args == NULL){
- 		fprintf (stdout, "error : g_args == NULL \n");
-        return 0;       
-    }
+	g_args_para* g_args = NULL;
+	if(init_args_para(&g_args) != 0){
+		fprintf (stdout, "init_args_para error \n");
+        return 0;	
+	}
 
 	int ret = get_cmd_line(argc, argv, g_args);
 	if(-EPERM == ret){
@@ -50,7 +67,7 @@ int main(int argc,char** argv)
 
 
 	zlog_category_t *zlog_handler = initLog(g_args->log_file,g_args->prog_name);
-	zlog_info(zlog_handler,"******************** start initdev process ********************************\n");
+	zlog_info(zlog_handler,"******************** start devManager process ********************************\n");
 	zlog_info(zlog_handler,"this version built time is:[%s  %s]\n",__DATE__,__TIME__);
 
     g_handler_para* g_handler = (g_handler_para*)malloc(sizeof(g_handler_para));
@@ -64,14 +81,6 @@ int main(int argc,char** argv)
 		return 0;
 	}
     g_handler->g_msg_queue = g_msg_queue;
-
-	// /* reg dev */
-	// g_RegDev_para* g_RegDev = NULL;
-	// int state = initRegdev(&g_RegDev, zlog_handler);
-	// if(state != 0 ){
-	// 	zlog_info(zlog_handler,"initRegdev create failed !");
-	// 	return 0;
-	// }
 
 	/* Timer handler */
 	event_timer_t* g_timer = NULL;
@@ -95,7 +104,36 @@ int main(int argc,char** argv)
 	// 	return 0;
 	// }
 
-    test(g_handler);
+	/* monitor init , not start */
+	if(init_monitor(zlog_handler) < 0){
+		zlog_info(zlog_handler, "init monitor failure !\n");
+		return 0;
+	}
+
+	/* Peripheral device check */
+	if(peripheral_check(g_handler) < 0){
+		zlog_info(zlog_handler, "init peripheral_check failure !\n");
+		return 0;
+	}
+
+	/* led init */
+	if(init_led(zlog_handler) < 0){
+		zlog_info(zlog_handler, "init led failure !\n");
+		return 0;
+	}
+
+	/* init tools */
+	g_handler->g_tool = (g_tool_para*)malloc(sizeof(g_tool_para));
+	init_spi_info(&(g_handler->g_tool->spi_handler), zlog_handler);
+	init_gpio_info(&(g_handler->g_tool->gpio_handler), zlog_handler);
+	init_reg_info(&(g_handler->g_tool->reg_handler), zlog_handler);
+
+	test(g_handler);
+
+	if(start_parse(g_handler) !=0){
+        zlog_info(zlog_handler, "start_parse error !!");
+        return 0;		
+	}
 
 	eventLoop(g_handler);
 
