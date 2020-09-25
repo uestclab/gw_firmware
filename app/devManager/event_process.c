@@ -1,5 +1,6 @@
 #include "common.h"
 #include "led.h"
+#include "monitor.h"
 
 void show_msg_info_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
     ////zlog_info(g_handler->log_handler, "show_msg_info_fun fun \n");
@@ -29,8 +30,9 @@ void work_idle_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, 
 void completed_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
     zlog_info(g_handler->log_handler, "completed_fun fun \n");
     led_green(g_handler->log_handler);
+    start_monitor(g_handler, g_handler->g_threadpool);
     system("sh /run/media/mmcblk1p1/script/completed.sh");
-    sleep(40);
+    // sleep(40);
     //system("reboot");
 }
 
@@ -46,7 +48,7 @@ void montab_fault_fun(long int frame_type, char *buf, int buf_len, void* tmp_dat
         zlog_info(g_handler->log_handler, "dac halt !!!!!! \n");
     }
 
-    sleep(5);
+    // sleep(5);
     g_handler->g_args->control_run_num = 0;
     run_action_by_step(g_handler, g_handler->g_threadpool);
 }
@@ -62,6 +64,17 @@ void test_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int t
     //zlog_info(g_handler->log_handler, "system call fun \n");
 }
 
+void mon_gpio_exception_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
+    int gpio_no = buf_len;
+    int gpio_value = tmp_data_len;
+    led_blue(g_handler->log_handler);
+    zlog_info(g_handler->log_handler, "mon_gpio_exception_fun fun ---- gpio_no = %d , gpio_value = %d \n", gpio_no, gpio_value);
+}
+
+void mon_exit_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
+    zlog_info(g_handler->log_handler, "mon_exit_fun fun \n");
+}
+
 msg_fun_st msg_flow[] = 
 {
     {MSG_TEST, test_fun},
@@ -73,6 +86,8 @@ msg_fun_st msg_flow[] =
     {MSG_NO_MONTAB_WORK_LEFT, completed_fun},
     {MSG_MONTAB_PROCESS_FAULT,montab_fault_fun},
     {MSG_EXIT,exit_fun},
+    {MSG_EXIT_MON_GPIO, mon_exit_fun},
+    {MSG_MON_GPIO_EXCEPTION, mon_gpio_exception_fun}
 };
 
 int processMessage_table_drive(struct msg_st* msgData, g_handler_para* g_handler) 
@@ -83,7 +98,7 @@ int processMessage_table_drive(struct msg_st* msgData, g_handler_para* g_handler
     { 
         if (msg_flow[i].frame_type == msgData->msg_type) 
         { 
-            msg_flow[i].fun_ptr(msgData->msg_type, msgData->msg_json, msgData->msg_len, NULL, 0, g_handler); 
+            msg_flow[i].fun_ptr(msgData->msg_type, msgData->msg_json, msgData->msg_len, NULL, msgData->tmp_data_len, g_handler); 
             return 0; 
         } 
     }

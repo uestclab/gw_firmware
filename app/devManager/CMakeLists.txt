@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-include_directories("/home/dpdk/liqing/code/GW_handover/handover_Server/dependence/include/")
+include_directories("/home/dpdk/liqing/code/component/dependence/include/")
 
 include_directories("/home/dpdk/liqing/common/include")
 include_directories("${PROJECT_SOURCE_DIR}/include")
@@ -28,9 +28,7 @@ add_executable(${BIN_NAME} ${BIN_SRCS} ${SRCS} ${REG_SRCS} ${GPIO_SRCS} ${SPIDEV
 
 add_library(zlog SHARED IMPORTED)
 add_library(cjson SHARED IMPORTED)
-add_library(gwapp SHARED IMPORTED)
-add_library(broker SHARED IMPORTED)
-add_library(mosquitto SHARED IMPORTED)
+add_library(gwcomponent SHARED IMPORTED)
 
 # 设置第三方动态库属性
 set_target_properties(zlog PROPERTIES IMPORTED_LOCATION
@@ -39,14 +37,8 @@ set_target_properties(zlog PROPERTIES IMPORTED_LOCATION
 set_target_properties(cjson PROPERTIES IMPORTED_LOCATION
                       /home/dpdk/liqing/common/lib/libcjson.so)
 
-set_target_properties(gwapp PROPERTIES IMPORTED_LOCATION
-					  /home/dpdk/liqing/code/GW_handover/handover_Server/dependence/lib_arm/libgwapp.so)
-					  
-set_target_properties(broker PROPERTIES IMPORTED_LOCATION
-                      ${PROJECT_SOURCE_DIR}/lib/libbroker.so)
-					  
-set_target_properties(mosquitto PROPERTIES IMPORTED_LOCATION
-                      ${PROJECT_SOURCE_DIR}/lib/libmosquitto.so)
+set_target_properties(gwcomponent PROPERTIES IMPORTED_LOCATION
+					  /home/dpdk/liqing/code/component/dependence/lib/libgwcomponent.so)
 
 					  
 #link_directories(${PROJECT_SOURCE_DIR}/lib)
@@ -54,9 +46,6 @@ set_target_properties(mosquitto PROPERTIES IMPORTED_LOCATION
 target_link_libraries(${BIN_NAME} cjson)
 target_link_libraries(${BIN_NAME} zlog)
 target_link_libraries(${BIN_NAME} -pthread)
-target_link_libraries(${BIN_NAME} gwapp)
-
-target_link_libraries(${BIN_NAME} broker)
-target_link_libraries(${BIN_NAME} mosquitto)
+target_link_libraries(${BIN_NAME} gwcomponent)
 
 install(TARGETS ${BIN_NAME} DESTINATION ${PROJECT_SOURCE_DIR}/bin/)

@@ -22,6 +22,8 @@ typedef enum msg_event{
 	MSG_MONTAB_PROCESS_FAULT,
 	MSG_EXIT,
 	MSG_TEST,
+	MSG_EXIT_MON_GPIO,
+	MSG_MON_GPIO_EXCEPTION,
 }msg_event;
 
 // 表驱动

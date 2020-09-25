@@ -46,7 +46,6 @@
 #include "msg_queue.h"
 #include "ThreadPool.h"
 #include "event_timer.h"
-#include "gw_utility.h"
 
 #include "spi_control.h"
 #include "gpio_control.h"

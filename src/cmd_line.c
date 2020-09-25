@@ -59,6 +59,27 @@ static int universal_get_opt(int opt, const char *optarg, g_args_para *g_args){
 	return ret;
 }
 
+char *get_prog_name(char *argv)
+{
+	int len = strlen(argv);
+	int i;
+	char *tmp = argv;
+	
+	for(i=len; i >=0; i--)
+	{
+		if(tmp[i] == '/'){
+			i++;
+			break;
+		}
+	}
+	
+	if(-1 == i){
+		i = 0;
+	}
+
+	return argv + i;
+}
+
 int get_cmd_line(int argc, char **argv, g_args_para *g_args)
 {
 	int ret = 0; //exitcode

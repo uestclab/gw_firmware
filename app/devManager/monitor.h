@@ -24,13 +24,16 @@ typedef enum mon_gpio{
     MON_HMC_GPIO2 = 997,
 }mon_gpio;
 
-#define	MAX_POLL	16
+#define	MAX_POLL	32
 
 struct gpio_poll_s{
+    zlog_category_t* log_handler;
 	int cnt;
 	struct pollfd fds[MAX_POLL];
+    int gpio_no_idx[MAX_POLL];
 };
 
 int init_monitor(zlog_category_t* log_handler);
+void start_monitor(g_handler_para* g_handler, ThreadPool* g_threadpool);
 
 #endif
