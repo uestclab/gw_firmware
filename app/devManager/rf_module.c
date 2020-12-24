@@ -1,0 +1,66 @@
+#include "common.h"
+#include "rf_module.h"
+
+char *path_11_tx = "/run/media/mmcblk1p1/etc/GW50_lmx2594_Tx_config_V1_PFD200M_FREQ14G125_step1.json";
+char *path_11_rx = "/run/media/mmcblk1p1/etc/GW50_lmx2594_Rx_config_V1_PFD200M_FREQ12G333_step1.json";
+char *path_10_tx = "/run/media/mmcblk1p1/etc/GW50_lmx2594_Tx_config_V1_PFD200M_FREQ12G4583_step1.json";
+char *path_10_rx = "/run/media/mmcblk1p1/etc/GW50_lmx2594_Rx_config_V1_PFD200M_FREQ14G_step1.json";
+
+
+int get_rf_gpio_value(int rf_gpio){
+    int8_t read_val = -1;
+    if(gpio_get_val(rf_gpio, &read_val) < 0 ){
+        printf("read rf_gpio failed !\n");
+        return -1;
+    }
+    return read_val;
+}
+
+int rf_module_init(){
+    if(gpio_open(RF_IN_PLL_LOCK_0, 0) < 0){
+		return -1;
+	}
+    if(gpio_open(RF_IN_PLL_LOCK_1, 0) < 0){
+		return -1;
+	}
+    return 0;
+}
+
+
+int config_freq(g_handler_para* g_handler){
+    int gpio970val = get_rf_gpio_value(RF_IN_PLACE_1);
+    int gpio971val = get_rf_gpio_value(RF_IN_PLACE_2);
+
+    if(gpio971val == 1 && gpio970val == 1){
+        char *jsonBuf = get_json_buf(path_11_tx);
+		if(spi_tool(jsonBuf, g_handler->g_tool->spi_handler) != 0){
+			return -1;
+		}
+
+        // check pll gpio
+        if(get_rf_gpio_value(RF_IN_PLL_LOCK_0) == 1){
+            system("spi_tool /dev/spidev32766.1	0x2C1FA4");
+            zlog_info(g_handler->log_handler, "enable rf tx channel\n");
+            return 0;
+        }else{
+            zlog_error(g_handler->log_handler, "rf Tx pll is not locked \n");
+            return -2;
+        }
+
+    }else if(gpio971val == 1 && gpio970val == 0){
+        char *jsonBuf = get_json_buf(path_10_rx);
+		if(spi_tool(jsonBuf, g_handler->g_tool->spi_handler) != 0){
+			return -1;
+		}
+
+        // check pll gpio
+        if(get_rf_gpio_value(RF_IN_PLL_LOCK_1) == 1){
+            system("spi_tool /dev/spidev32766.2	0x2C1FA4");
+            zlog_info(g_handler->log_handler, "enable rf rx channel\n");
+            return 0;
+        }else{
+            zlog_error(g_handler->log_handler, "rf Rx pll is not locked \n");
+            return -2;
+        }
+    }
+}

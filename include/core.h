@@ -47,6 +47,8 @@
 #include "ThreadPool.h"
 #include "event_timer.h"
 
+#include "gpio_define.h"
+
 #include "spi_control.h"
 #include "gpio_control.h"
 #include "reg_control.h"

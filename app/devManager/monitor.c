@@ -1,5 +1,6 @@
 #include "common.h"
 #include "monitor.h"
+#include "rf_module.h"
 
 
 /* ------ rf gpio --------------- */
@@ -175,6 +176,10 @@ int init_monitor(zlog_category_t* log_handler){
         return -1;
     }
 
+    if(rf_module_init() < 0){
+        return -1;
+    }
+
     return 0;
 }
 
@@ -183,7 +188,7 @@ int gpio_poll_waite(int to_ms, g_handler_para* g_handler)
 	int ret = 0, rc; 
 	int i, found = 0;
 	int8_t val = -1;
-    zlog_info(g_handler->log_handler, "new gpio_poll_waite.... \n");
+    // zlog_info(g_handler->log_handler, "new gpio_poll_waite.... \n");
 	rc = poll(g_poll_list.fds,MAX_POLL,to_ms);
 	if(rc > 0 ){
 		for(i=0; i<MAX_POLL; i++ ){
