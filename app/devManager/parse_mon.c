@@ -4,6 +4,7 @@
 */
 #include "common.h"
 #include "parse_helper.h"
+#include "rf_module.h"
 
 // for test
 zlog_category_t*    log_handler = NULL;
@@ -295,6 +296,19 @@ int rf_fun(const char *dst, void* cmd, g_handler_para* g_handler){
 	return 0;
 }
 
+int rf_freq_func(const char *dst, void* cmd, g_handler_para* g_handler){
+	run_node_s* run_cmd = (run_node_s*)cmd;
+	zlog_info(g_handler->log_handler, "rf_freq_func --- dst : %s\n", dst);
+
+	if(g_handler->g_peripheral->rf_on == 1){
+		return 0;
+	}
+
+	int ret = config_freq(g_handler);
+
+	return ret;
+}
+
 int mon_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	run_node_s* run_cmd = (run_node_s*)cmd;
 	return 0;
@@ -307,6 +321,7 @@ dst_fun_st dst_flow[] = {
 	{"hmc",spi_proc},
 	{"lmx",spi_proc},
 	{"reg",reg_proc},
+	{"rf_freq",rf_freq_func},
 	{"rf",rf_fun},
 	{"gpio",gpio_proc},
 	{"mon",mon_proc},
@@ -334,8 +349,8 @@ void* montab_work_thread(void* args){
     run_node_s* pnode = NULL;
 	list_for_each_entry(pnode, &g_args->run_list, next) {
 		if(pnode->seq_num == control_num){    
-			// zlog_info(g_handler->log_handler," control_num : %d ---- dst: %s, conf: %s, st_file: %s, st_to: %d \n" , 
-            //     control_num, pnode->dst, pnode->con_file, pnode->st_file_list, pnode->st_to);
+			zlog_info(g_handler->log_handler," control_num : %d ---- dst: %s, conf: %s, st_file: %s, st_to: %d \n" , 
+                control_num, pnode->dst, pnode->con_file, pnode->st_file_list, pnode->st_to);
 
 			// process
 			ret = process_dispatch(pnode,g_handler);
