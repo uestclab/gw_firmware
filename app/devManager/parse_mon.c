@@ -216,6 +216,8 @@ int shell_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 		postMsg(MSG_EXIT,NULL,0,NULL,0,g_handler->g_msg_queue);
 	}else if(0 == strcmp(run_cmd->con_file, "completed")){
 		postMsg(MSG_TEST,NULL,0,NULL,0,g_handler->g_msg_queue);
+	}else if(0 == strcmp(run_cmd->con_file, "runrsdk")){
+		postMsg(MSG_RUN_RSDK,NULL,0,NULL,0,g_handler->g_msg_queue);
 	}else{
 		system(run_cmd->con_file);
 	}

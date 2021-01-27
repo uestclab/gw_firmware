@@ -2,6 +2,25 @@
 #include "monitor.h"
 #include "rf_module.h"
 
+int init_mon_gpio(int num, int edge);
+
+/* ------ power gpio --------------- */
+int init_power_monitor(){
+
+    if(init_mon_gpio(POWER_PFO, FALLING) < 0){
+        return -1;
+    }
+
+    // if(init_mon_gpio(POWER_CAPGD, BOTH) < 0){
+    //     return -1;
+    // }
+
+    // if(init_mon_gpio(POWER_SMB_ALERT, BOTH) < 0){
+    //     return -1;
+    // }
+
+    return 0;
+} 
 
 /* ------ rf gpio --------------- */
 int init_rf_monitor(){
@@ -140,43 +159,47 @@ int init_monitor(zlog_category_t* log_handler){
 
     gpio_layer_init(log_handler);
 
-    if(init_mon_gpio(MON_PG_ZYNQ, BOTH) < 0){
-        return -1;
-    }
+    // if(init_mon_gpio(MON_PG_ZYNQ, BOTH) < 0){
+    //     return -1;
+    // }
 
-    if(init_mon_gpio(MON_PG_CLK, BOTH) < 0){
-        return -1;
-    }
+    // if(init_mon_gpio(MON_PG_CLK, BOTH) < 0){
+    //     return -1;
+    // }
 
-    if(init_mon_gpio(MON_PG_ADC, BOTH) < 0){
-        return -1;
-    }
+    // if(init_mon_gpio(MON_PG_ADC, BOTH) < 0){
+    //     return -1;
+    // }
 
-    if(init_mon_gpio(MON_PG_DAC, BOTH) < 0){
-        return -1;
-    }
+    // if(init_mon_gpio(MON_PG_DAC, BOTH) < 0){
+    //     return -1;
+    // }
 
-    if(init_mon_gpio(MON_PG_5V, BOTH) < 0){
-        return -1;
-    }
+    // if(init_mon_gpio(MON_PG_5V, BOTH) < 0){
+    //     return -1;
+    // }
 
-    if(init_mon_gpio(MON_HMC_GPIO1, BOTH) < 0){
-        return -1;
-    }
+    // if(init_mon_gpio(MON_HMC_GPIO1, BOTH) < 0){
+    //     return -1;
+    // }
 
-    if(init_mon_gpio(MON_HMC_GPIO2, BOTH) < 0){
-        return -1;
-    }
+    // if(init_mon_gpio(MON_HMC_GPIO2, BOTH) < 0){
+    //     return -1;
+    // }
 
     if(init_rf_monitor() < 0){
         return -1;
     }
 
-    if(init_switch_monitor() <0){
+    if(init_switch_monitor() < 0){
         return -1;
     }
 
     if(rf_module_init() < 0){
+        return -1;
+    }
+
+    if(init_power_monitor() < 0){
         return -1;
     }
 
@@ -193,7 +216,7 @@ int gpio_poll_waite(int to_ms, g_handler_para* g_handler)
 	if(rc > 0 ){
 		for(i=0; i<MAX_POLL; i++ ){
 			if(g_poll_list.fds[i].revents & POLLPRI){
-                zlog_info(g_handler->log_handler,"revents = 0x%x \n", g_poll_list.fds[i].revents);
+                // zlog_info(g_handler->log_handler,"revents = 0x%x \n", g_poll_list.fds[i].revents);
 				g_poll_list.fds[i].revents = 0;
 				if(lseek(g_poll_list.fds[i].fd,0,SEEK_SET) == -1){
                     ret = -1;
@@ -207,8 +230,8 @@ int gpio_poll_waite(int to_ms, g_handler_para* g_handler)
 				found++;
                 int gpio_no = g_poll_list.gpio_no_idx[i];
                 val = val - 48; // "1" ascii
-                zlog_info(g_handler->log_handler, "gpio_no = %d , g_poll_list.fds[%d].fd = %d, val = %d \n", 
-                         gpio_no, i, g_poll_list.fds[i].fd, val);
+                // zlog_info(g_handler->log_handler, "gpio_no = %d , g_poll_list.fds[%d].fd = %d, val = %d \n", 
+                        //  gpio_no, i, g_poll_list.fds[i].fd, val);
                 if(val == 0){
                     postMsg(MSG_MON_GPIO_EXCEPTION,NULL,gpio_no,NULL,val,g_handler->g_msg_queue);
                 }

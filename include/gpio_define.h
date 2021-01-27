@@ -30,5 +30,11 @@ typedef enum led_gpio{
     LED_BLUE = 988,
 }led_gpio;
 
+typedef enum power_gpio{
+    POWER_PFO = 1014,
+    POWER_CAPGD = 1015,
+    POWER_EN_PTC = 1016,
+    POWER_SMB_ALERT = 1017,
+}power_gpio;
 
 #endif
