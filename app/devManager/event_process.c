@@ -1,6 +1,7 @@
 #include "common.h"
 #include "led.h"
 #include "monitor.h"
+#include "rsdk_monitor.h"
 
 void show_msg_info_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
     ////zlog_info(g_handler->log_handler, "show_msg_info_fun fun \n");
@@ -67,6 +68,7 @@ void test_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int t
 void run_rsdk_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
     zlog_info(g_handler->log_handler, "run_rsdk_fun fun \n");
     system("sh /run/media/mmcblk1p1/script/run_rsdk.sh");
+    start_rsdk_monitor(g_handler, g_handler->g_threadpool);
     zlog_info(g_handler->log_handler, "end run_rsdk_fun call fun \n");
 }
 
