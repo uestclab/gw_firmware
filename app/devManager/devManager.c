@@ -1,6 +1,7 @@
 #include "common.h"
 #include "cmd_line.h"
 #include "led.h"
+#include "power.h"
 #include "monitor.h"
 
 zlog_category_t * initLog(const char* path, char* app_name){
@@ -121,6 +122,12 @@ int main(int argc,char** argv)
 		zlog_info(zlog_handler, "init led failure !\n");
 		return 0;
 	}
+
+	/* power init */
+	if(init_power(zlog_handler) < 0){
+		zlog_info(zlog_handler, "init power module failure !\n");
+		return 0;
+	}	
 
 	/* init tools */
 	g_handler->g_tool = (g_tool_para*)malloc(sizeof(g_tool_para));

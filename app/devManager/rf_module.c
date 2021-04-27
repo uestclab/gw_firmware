@@ -31,36 +31,45 @@ int config_freq(g_handler_para* g_handler){
     int gpio970val = get_rf_gpio_value(RF_IN_PLACE_1);
     int gpio971val = get_rf_gpio_value(RF_IN_PLACE_2);
 
+    char *tx_path = NULL;
+    char *rx_path = NULL;
+
     if(gpio971val == 1 && gpio970val == 1){
-        char *jsonBuf = get_json_buf(path_11_tx);
-		if(spi_tool(jsonBuf, g_handler->g_tool->spi_handler) != 0){
-			return -1;
-		}
-
-        // check pll gpio
-        if(get_rf_gpio_value(RF_IN_PLL_LOCK_0) == 1){
-            system("spi_tool /dev/spidev32766.1	0x2C1FA4");
-            zlog_info(g_handler->log_handler, "enable rf tx channel\n");
-            return 0;
-        }else{
-            zlog_error(g_handler->log_handler, "rf Tx pll is not locked \n");
-            return -2;
-        }
-
+        tx_path = path_11_tx;
+        rx_path = path_11_rx;
     }else if(gpio971val == 1 && gpio970val == 0){
-        char *jsonBuf = get_json_buf(path_10_rx);
-		if(spi_tool(jsonBuf, g_handler->g_tool->spi_handler) != 0){
-			return -1;
-		}
-
-        // check pll gpio
-        if(get_rf_gpio_value(RF_IN_PLL_LOCK_1) == 1){
-            system("spi_tool /dev/spidev32766.2	0x2C1FA4");
-            zlog_info(g_handler->log_handler, "enable rf rx channel\n");
-            return 0;
-        }else{
-            zlog_error(g_handler->log_handler, "rf Rx pll is not locked \n");
-            return -2;
-        }
+        tx_path = path_10_tx;
+        rx_path = path_10_rx;
     }
+
+    /* enable tx channel */
+    char *jsonBuf = get_json_buf(tx_path);
+    if(spi_tool(jsonBuf, g_handler->g_tool->spi_handler) != 0){
+        return -1;
+    }
+
+    // check pll gpio
+    if(get_rf_gpio_value(RF_IN_PLL_LOCK_0) == 1){
+        system("spi_tool /dev/spidev32766.1	0x2C1FA4");
+        zlog_info(g_handler->log_handler, "enable rf tx channel\n");
+    }else{
+        zlog_error(g_handler->log_handler, "rf Tx pll is not locked \n");
+        return -2;
+    }
+
+    /* enable rx channel */
+    jsonBuf = get_json_buf(rx_path);
+    if(spi_tool(jsonBuf, g_handler->g_tool->spi_handler) != 0){
+        return -1;
+    }
+
+    // check pll gpio
+    if(get_rf_gpio_value(RF_IN_PLL_LOCK_1) == 1){
+        system("spi_tool /dev/spidev32766.2	0x2C1FA4");
+        zlog_info(g_handler->log_handler, "enable rf rx channel\n");
+    }else{
+        zlog_error(g_handler->log_handler, "rf Rx pll is not locked \n");
+        return -2;
+    }
+
 }

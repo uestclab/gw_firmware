@@ -1,6 +1,7 @@
 #include "common.h"
 #include "led.h"
 #include "monitor.h"
+#include "rsdk_monitor.h"
 
 void show_msg_info_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
     ////zlog_info(g_handler->log_handler, "show_msg_info_fun fun \n");
@@ -49,7 +50,20 @@ void montab_fault_fun(long int frame_type, char *buf, int buf_len, void* tmp_dat
     }
 
     // sleep(5);
-    g_handler->g_args->control_run_num = 0;
+    // g_handler->g_args->control_run_num = 0;
+    int re_configure_seq = tmp_data_len;
+    if(re_configure_seq > 0){
+        g_args_para* g_args = g_handler->g_args;
+        run_node_s* pnode = NULL;
+        list_for_each_entry(pnode, &g_args->run_list, next) {
+            if(pnode->seq == re_configure_seq){    
+                zlog_info(g_handler->log_handler," re-configure : seq_num : %d ---- dst: %s, conf: %s, st_file: %s, check point seq: %d \n" , 
+                    pnode->seq_num, pnode->dst, pnode->con_file, pnode->st_file_list, pnode->st_to);
+                    g_args->control_run_num  = pnode->seq_num;
+            }
+        } 
+    }
+
     run_action_by_step(g_handler, g_handler->g_threadpool);
 }
 
@@ -59,9 +73,16 @@ void exit_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int t
 }
 
 void test_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
-    //zlog_info(g_handler->log_handler, "test_fun fun \n");
+    zlog_info(g_handler->log_handler, "test_fun fun \n");
     //system("sh /run/media/mmcblk1p1/script/looptest.sh");
     //zlog_info(g_handler->log_handler, "system call fun \n");
+}
+
+void run_rsdk_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
+    zlog_info(g_handler->log_handler, "run_rsdk_fun fun \n");
+    system("sh /run/media/mmcblk1p1/script/run_rsdk.sh");
+    start_rsdk_monitor(g_handler, g_handler->g_threadpool);
+    zlog_info(g_handler->log_handler, "end run_rsdk_fun call fun \n");
 }
 
 void mon_gpio_exception_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, int tmp_data_len, g_handler_para* g_handler){
@@ -77,6 +98,7 @@ void mon_exit_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, i
 
 msg_fun_st msg_flow[] = 
 {
+    {MSG_RUN_RSDK, run_rsdk_fun},
     {MSG_TEST, test_fun},
     {MSG_TIMEOUT, timeout_fun},
     {MSG_SHOW_WORKQUEUE, show_msg_info_fun},

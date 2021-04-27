@@ -216,6 +216,8 @@ int shell_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 		postMsg(MSG_EXIT,NULL,0,NULL,0,g_handler->g_msg_queue);
 	}else if(0 == strcmp(run_cmd->con_file, "completed")){
 		postMsg(MSG_TEST,NULL,0,NULL,0,g_handler->g_msg_queue);
+	}else if(0 == strcmp(run_cmd->con_file, "runrsdk")){
+		postMsg(MSG_RUN_RSDK,NULL,0,NULL,0,g_handler->g_msg_queue);
 	}else{
 		system(run_cmd->con_file);
 	}
@@ -359,7 +361,7 @@ void* montab_work_thread(void* args){
 				postMsg(MSG_MONTAB_WORK_IDLE,NULL,0,NULL,0,g_handler->g_msg_queue);
 				return NULL;
 			}else{
-				postMsg(MSG_MONTAB_PROCESS_FAULT,NULL,ret,NULL,0,g_handler->g_msg_queue);
+				postMsg(MSG_MONTAB_PROCESS_FAULT,NULL,ret,NULL,pnode->st_to,g_handler->g_msg_queue);
 				return NULL;
 			}
 		}
