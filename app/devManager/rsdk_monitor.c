@@ -70,7 +70,36 @@ int rx_packets_read(g_handler_para* g_handler)
     close(fd);
 
     int value = atoi(value_str);
-    zlog_info(g_handler->log_handler, "rx_packets value = 0x%x, value_str = %s ", value, value_str);
+    zlog_info(g_handler->log_handler, "rx_packets value = %d, value_str = %s ", value, value_str);
+
+    return value;
+}
+
+int tx_packets_read(g_handler_para* g_handler)
+{  
+    char path[64];  
+
+    char value_str[3];  
+
+    int fd;  
+
+    snprintf(path, sizeof(path), "/sys/class/net/eth0/statistics/tx_packets");  
+
+    fd = open(path, O_RDONLY);  
+
+    if (fd < 0){
+        zlog_error(g_handler->log_handler,"Failed to open /sys/class/net/eth0/statistics/tx_packets for reading!\n");
+        return -1;
+    }  
+
+    if (read(fd, value_str, 3) < 0){
+        zlog_error(g_handler->log_handler,"Failed to read value!\n");
+        return -1;
+    }
+    close(fd);
+
+    int value = atoi(value_str);
+    zlog_info(g_handler->log_handler, "tx_packets value = %d, value_str = %s ", value, value_str);
 
     return value;
 }
@@ -81,6 +110,8 @@ void* rsdk_work_thread(void* args){
     g_args_para* g_args = g_handler->g_args;
     zlog_info(g_handler->log_handler, "start rsdk monitor work \n");
     int ret = 0;
+
+    int restart = 0;
 
     while(1){
         sleep(60);
@@ -93,12 +124,15 @@ void* rsdk_work_thread(void* args){
         int value_1 = rx_packets_read(g_handler);
         sleep(5);
         int value_2 = rx_packets_read(g_handler);
-        if(value_2 == value_1){
+        int tx_value = tx_packets_read(g_handler);
+
+        if(value_2 == value_1 && tx_value == 0 && restart == 0){
             zlog_error(g_handler->log_handler, "rx_packets is not increase");
             killprocess("rsdk_linux.img");
             zlog_info(g_handler->log_handler, "run_rsdk_fun fun \n");
             system("sh /run/media/mmcblk1p1/script/run_rsdk.sh");           
         }
+        restart = 1;
     }
 
 

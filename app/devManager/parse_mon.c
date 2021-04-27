@@ -361,7 +361,7 @@ void* montab_work_thread(void* args){
 				postMsg(MSG_MONTAB_WORK_IDLE,NULL,0,NULL,0,g_handler->g_msg_queue);
 				return NULL;
 			}else{
-				postMsg(MSG_MONTAB_PROCESS_FAULT,NULL,ret,NULL,0,g_handler->g_msg_queue);
+				postMsg(MSG_MONTAB_PROCESS_FAULT,NULL,ret,NULL,pnode->st_to,g_handler->g_msg_queue);
 				return NULL;
 			}
 		}
