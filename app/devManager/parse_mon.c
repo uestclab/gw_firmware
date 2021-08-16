@@ -316,6 +316,20 @@ int mon_proc(const char *dst, void* cmd, g_handler_para* g_handler){
 	return 0;
 }
 
+int heat_proc(const char *dst, void* cmd, g_handler_para* g_handler){
+	run_node_s* run_cmd = (run_node_s*)cmd;
+
+	int ret = 0;
+	if(run_cmd->con_file){
+		char* jsonBuf = get_json_buf(run_cmd->con_file);
+		if(enoughHeat(jsonBuf, g_handler->log_handler) != 0){
+			ret = -1;
+		}
+	}
+
+	return ret;
+}
+
 dst_fun_st dst_flow[] = {
 	{"shell", shell_proc},
 	{"adc",spi_proc},
@@ -327,6 +341,7 @@ dst_fun_st dst_flow[] = {
 	{"rf",rf_fun},
 	{"gpio",gpio_proc},
 	{"mon",mon_proc},
+	{"heat",heat_proc},
 };
 
 // gpio , adc ,dac, hmc, lmx, reg, rf, shell

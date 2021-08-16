@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.5)
-option(PUBLIC "This is a default option for PUBLIC" ON)
-message(STATUS "build public platform switch:"${PUBLIC})
+option(var_platform "This is a default option for ARM64 PLATFORM" ON)
+message(STATUS "build public platform switch:"${var_platform})
 project(device_module)
 
-if(${PUBLIC} STREQUAL "ON")
+if(${var_platform} STREQUAL "ON")
 	message(STATUS "start to build ARM platform.")
+
+	add_definitions(-DZYNQ)
 	# cross complie
 	SET(CMAKE_SYSTEM_NAME Linux)
 	SET(CMAKE_SYSTEM_PROCESSOR arm) 
@@ -17,10 +19,22 @@ if(${PUBLIC} STREQUAL "ON")
 	SET(CMAKE_C_COMPILER ${TOOLCHAIN_DIR}/bin/arm-linux-gnueabihf-gcc)
 	SET(CMAKE_CXX_COMPILER ${TOOLCHAIN_DIR}/bin/arm-linux-gnueabihf-g++)
 
-elseif(${PUBLIC} STREQUAL "OFF")
-    message(STATUS "start to build PC platform.")
-	message(STATUS "PROJECT_SOURCE_DIR": ${PROJECT_SOURCE_DIR})
-endif(${PUBLIC} STREQUAL "ON")
+elseif(${var_platform} STREQUAL "OFF")
+	message(STATUS "start to build ARM64 platform.")
+
+	add_definitions(-DZYNQ_MP)
+	SET(CMAKE_SYSTEM_NAME Linux)
+	SET(CMAKE_SYSTEM_PROCESSOR arm) 
+	SET(TOOLCHAIN_DIR "/home/dpdk/liqing/petalinux/petalinux-2018-2/tools/linux-i386/aarch64-linux-gnu")
+	SET(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN_DIR})
+	SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+	SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+	SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+	SET(CMAKE_C_COMPILER ${TOOLCHAIN_DIR}/bin/aarch64-linux-gnu-gcc-7.2.1)
+	SET(CMAKE_CXX_COMPILER ${TOOLCHAIN_DIR}/bin/aarch64-linux-gnu-g++)
+
+endif(${var_platform} STREQUAL "ON")
 
 SET(CMAKE_BUILD_TYPE "Debug")  
 SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb")  

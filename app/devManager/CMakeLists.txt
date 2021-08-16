@@ -30,15 +30,26 @@ add_library(zlog SHARED IMPORTED)
 add_library(cjson SHARED IMPORTED)
 add_library(gwcomponent SHARED IMPORTED)
 
-# 设置第三方动态库属性
-set_target_properties(zlog PROPERTIES IMPORTED_LOCATION
-                      /home/dpdk/liqing/common/lib/libzlog.so)
+if(${var_platform} STREQUAL "ON")
+    # 设置第三方动态库属性
+    set_target_properties(zlog PROPERTIES IMPORTED_LOCATION
+                        /home/dpdk/liqing/common/lib/libzlog.so)
 
-set_target_properties(cjson PROPERTIES IMPORTED_LOCATION
-                      /home/dpdk/liqing/common/lib/libcjson.so)
+    set_target_properties(cjson PROPERTIES IMPORTED_LOCATION
+                        /home/dpdk/liqing/common/lib/libcjson.so)
 
-set_target_properties(gwcomponent PROPERTIES IMPORTED_LOCATION
-					  /home/dpdk/liqing/code/component/dependence/lib/libgwcomponent.so)
+    set_target_properties(gwcomponent PROPERTIES IMPORTED_LOCATION
+                        /home/dpdk/liqing/code/component/dependence/lib/libgwcomponent.so)
+    install(TARGETS ${BIN_NAME} DESTINATION ${PROJECT_SOURCE_DIR}/bin/arm)
+elseif(${var_platform} STREQUAL "OFF")
+    set_target_properties(cjson PROPERTIES IMPORTED_LOCATION
+                        /home/dpdk/liqing/common/lib-arm64/libcjson.so)
+    set_target_properties(zlog PROPERTIES IMPORTED_LOCATION
+                        /home/dpdk/liqing/common/lib-arm64/libzlog.so)
+    set_target_properties(gwcomponent PROPERTIES IMPORTED_LOCATION
+                        /home/dpdk/liqing/code/component/dependence/lib_arm64/libgwcomponent.so)
+    install(TARGETS ${BIN_NAME} DESTINATION ${PROJECT_SOURCE_DIR}/bin/arm64)
+endif(${var_platform} STREQUAL "ON")
 
 					  
 #link_directories(${PROJECT_SOURCE_DIR}/lib)
@@ -48,4 +59,3 @@ target_link_libraries(${BIN_NAME} zlog)
 target_link_libraries(${BIN_NAME} -pthread)
 target_link_libraries(${BIN_NAME} gwcomponent)
 
-install(TARGETS ${BIN_NAME} DESTINATION ${PROJECT_SOURCE_DIR}/bin/)

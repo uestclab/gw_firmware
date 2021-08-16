@@ -32,7 +32,14 @@ void completed_fun(long int frame_type, char *buf, int buf_len, void* tmp_data, 
     zlog_info(g_handler->log_handler, "completed_fun fun \n");
     led_green(g_handler->log_handler);
     start_monitor(g_handler, g_handler->g_threadpool);
+#ifdef ZYNQ
     system("sh /run/media/mmcblk1p1/script/completed.sh");
+#endif
+
+#ifdef ZYNQ_MP
+    system("sh /run/media/mmcblk0p1/script/completed.sh");
+#endif
+
     // sleep(40);
     //system("reboot");
 }

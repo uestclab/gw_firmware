@@ -5,6 +5,7 @@
 
 #include "spi_control.h"
 #include "reg_control.h"
+#include "i2c_control.h"
 
 #include <regdev/regdev_common.h>
 #include <gpio/gpio_ops.h>

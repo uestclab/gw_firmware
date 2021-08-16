@@ -1,10 +1,19 @@
 #include "common.h"
 #include "rf_module.h"
 
+#ifdef ZYNQ
 char *path_11_tx = "/run/media/mmcblk1p1/etc/GW50_lmx2594_Tx_config_V1_PFD200M_FREQ14G125_step1.json";
 char *path_11_rx = "/run/media/mmcblk1p1/etc/GW50_lmx2594_Rx_config_V1_PFD200M_FREQ12G333_step1.json";
-char *path_10_tx = "/run/media/mmcblk1p1/etc/GW50_lmx2594_Tx_config_V1_PFD200M_FREQ12G4583_step1.json";
+char *path_10_tx = "/run/media/mmcblk1p1/etc/GW50_lmx2594_Tx_config_V1_PFD200M_FREQ12G333_step1.json";
 char *path_10_rx = "/run/media/mmcblk1p1/etc/GW50_lmx2594_Rx_config_V1_PFD200M_FREQ14G_step1.json";
+#endif
+
+#ifdef ZYNQ_MP
+char *path_11_tx = "/run/media/mmcblk0p1/etc/GW50_lmx2594_Tx_config_V1_PFD200M_FREQ14G125_step1.json";
+char *path_11_rx = "/run/media/mmcblk0p1/etc/GW50_lmx2594_Rx_config_V1_PFD200M_FREQ12G333_step1.json";
+char *path_10_tx = "/run/media/mmcblk0p1/etc/GW50_lmx2594_Tx_config_V1_PFD200M_FREQ12G4583_step1.json";
+char *path_10_rx = "/run/media/mmcblk0p1/etc/GW50_lmx2594_Rx_config_V1_PFD200M_FREQ14G_step1.json";
+#endif
 
 
 int get_rf_gpio_value(int rf_gpio){

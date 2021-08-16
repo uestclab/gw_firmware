@@ -105,6 +105,7 @@ int main(int argc,char** argv)
 	// 	return 0;
 	// }
 
+#ifdef ZYNQ
 	/* monitor init , not start */
 	if(init_monitor(zlog_handler) < 0){
 		zlog_info(zlog_handler, "init monitor failure !\n");
@@ -127,7 +128,10 @@ int main(int argc,char** argv)
 	if(init_power(zlog_handler) < 0){
 		zlog_info(zlog_handler, "init power module failure !\n");
 		return 0;
-	}	
+	}
+#else
+
+#endif
 
 	/* init tools */
 	g_handler->g_tool = (g_tool_para*)malloc(sizeof(g_tool_para));

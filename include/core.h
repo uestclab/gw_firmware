@@ -52,6 +52,8 @@
 #include "spi_control.h"
 #include "gpio_control.h"
 #include "reg_control.h"
+#include "i2c_control.h"
+#include "power.h"
 
 typedef struct g_peripheral_para{
 	int rf_on;
