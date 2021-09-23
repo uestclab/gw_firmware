@@ -28,13 +28,13 @@ int init_rf_monitor(){
         return -1;
     }
 
-    if(gpio_open(RF_IN_PLACE_1, 0) < 0){
-        return -1;
-    }
+    // if(gpio_open(RF_IN_PLACE_1, 0) < 0){
+    //     return -1;
+    // }
 
-    if(gpio_open(RF_IN_PLACE_2, 0) < 0){
-        return -1;
-    }
+    // if(gpio_open(RF_IN_PLACE_2, 0) < 0){
+    //     return -1;
+    // }
     return 0;
 }
 
@@ -72,6 +72,7 @@ int peripheral_check(g_handler_para* g_handler){
     }
 
     int rf_on = check_rf_exist();
+    rf_on = 0;
     if(rf_on == 1 ){
         zlog_info(g_handler->log_handler, " No rf device !");
     }

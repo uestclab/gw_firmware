@@ -306,9 +306,17 @@ int rf_freq_func(const char *dst, void* cmd, g_handler_para* g_handler){
 		return 0;
 	}
 
-	int ret = config_freq(g_handler);
+	if(run_cmd->con_file){
+		char* E1_E2_jsonBuf = get_json_buf(run_cmd->con_file);
+		if(config_freq(E1_E2_jsonBuf,g_handler) != 0){
+			return -1;
+		}
+	}
 
-	return ret;
+	// int ret = config_freq(g_handler);
+
+	// return ret;
+	return 0;
 }
 
 int mon_proc(const char *dst, void* cmd, g_handler_para* g_handler){
@@ -336,6 +344,7 @@ dst_fun_st dst_flow[] = {
 	{"dac",spi_proc},
 	{"hmc",spi_proc},
 	{"lmx",spi_proc},
+	{"spi",spi_proc},
 	{"reg",reg_proc},
 	{"rf_freq",rf_freq_func},
 	{"rf",rf_fun},

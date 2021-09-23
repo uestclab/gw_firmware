@@ -4,6 +4,6 @@
 #include "core.h"
 
 int rf_module_init();
-int config_freq(g_handler_para* g_handler);
+int config_freq(char* E1_E2_jsonBuf, g_handler_para* g_handler);
 
 #endif
